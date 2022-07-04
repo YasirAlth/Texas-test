@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Release.Name}}-couchdb-texas-init
+data:
+  couchdb-setup.sh: |
+  {{- $nodeCount := .Values.couchdb.clusterSize | int }}
+  {{- range $index0 := until $nodeCount }}
+    COUCHDB_POD{{ $index0 }}={{ $.Release.Name }}-couchdb-{{ $index0 }}.{{ $.Release.Name }}-couchdb
+    until $(curl --output /dev/null -G --silent --fail http://${adminUsername}:${adminPassword}@${COUCHDB_POD{{ $index0 }}}:5984); do
+      echo "Waiting for liveliness: ${COUCHDB_POD{{ $index0 }}}"
+      sleep 5
+    done;
+    until $(curl --output /dev/null -G --silent --fail http://${adminUsername}:${adminPassword}@${COUCHDB_POD{{ $index0 }}}:5984/_up); do
+      echo "Waiting for readiness: ${COUCHDB_POD{{ $index0 }}}"
+      sleep 5
+    done;
+  {{- end }}
+
+    curl -s \
+    http://${adminUsername}:${adminPassword}@${COUCHDB_POD0}:5984/_cluster_setup \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d '{"action": "finish_cluster"}'
+
+    cd /opt/couch.setup
+    npm run upload
+
+  README.info: |
+    Managed by Kubernetes as a configmap

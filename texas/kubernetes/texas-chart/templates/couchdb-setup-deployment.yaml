@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Release.Name}}-couchdb-setup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name:  {{.Release.Name}}-couchdb-setup
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name:  {{.Release.Name}}-couchdb-setup
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+            {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+            {{- toYaml . | nindent 8 }}
+            {{- end }}
+      containers:
+        - name: {{.Release.Name}}-texas-couchdb-init
+          image: {{.Values.couchdb.setup.image}}
+          imagePullPolicy: Always
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - |-
+              sh /setup/couchdb-setup.sh;
+              while :
+              do
+                echo "Sleeping ";
+                sleep 60;
+              done;
+              exit 0;
+          volumeMounts:
+            - mountPath: /setup/
+              name: couchdb-setup-init
+          envFrom:
+            - configMapRef:
+                name: {{.Release.Name}}-texas-configmap
+            - secretRef:
+                name: {{.Release.Name}}-couchdb
+      volumes:
+        - name: couchdb-setup-init
+          configMap:
+            name: {{.Release.Name}}-couchdb-texas-init

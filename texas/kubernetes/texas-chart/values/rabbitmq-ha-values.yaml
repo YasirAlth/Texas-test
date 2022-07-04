@@ -1,0 +1,34 @@
+rabbitmq-ha:
+  image:
+    repository: rabbitmq
+    tag: 3.8.0-alpine
+
+  replicaCount: 1
+
+  rabbitmqPrometheusPlugin:
+    enabled: true
+
+  ingress:
+    enabled: true
+    path: /rabbit
+    annotations:
+      kubernetes.io/ingress.class: traefik
+#    - traefik.ingress.kubernetes.io/rewrite-target: /rabbitmq
+#      traefik.frontend.rule.type: PathPrefixStrip
+
+  llivenessProbe:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - 'wget -O - -q --header "Authorization: Basic `echo -n \"$RABBIT_MANAGEMENT_USER:$RABBIT_MANAGEMENT_PASSWORD\" | base64`" http://localhost:15672/rabbit/api/healthchecks/node | grep -qF "{\"status\":\"ok\"}"'
+
+  readinessProbe:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - 'wget -O - -q --header "Authorization: Basic `echo -n \"$RABBIT_MANAGEMENT_USER:$RABBIT_MANAGEMENT_PASSWORD\" | base64`" http://localhost:15672/rabbit/api/healthchecks/node | grep -qF "{\"status\":\"ok\"}"'
+
+  extraConfig: |
+    management.path_prefix = /rabbit

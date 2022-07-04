@@ -1,0 +1,204 @@
+@import '~@angular/material/theming';
+
+@include mat-core();
+
+//---------Custom Angular Material Theming-----------------//
+// The intent here is to modify the styling of Angular Material buttons to
+// look like they are Ionic-ly themed, as we have to use the Angular Material
+// buttons (rather than ion-buttons) in order to keep the previous, next 
+// functionality in the stepper on the Configuration Page.
+
+// Palettes generated for custom colours (ionic theme colours) using resource http://mcg.mbitson.com
+// Ref: https://stackoverflow.com/questions/41440998/how-can-i-use-custom-theme-palettes-in-angular
+//
+// Colours used to generate palettes
+// texas-ion-primary: 3880FF
+// texas-ion-secondary: 0CD1E8
+// texas-ion-tertiary: 7044FF
+// texas-ion-success: 10DC60
+// texas-ion-danger: F04141
+//
+// However ensure that the contrast array uses a key: value mapping rather than just placeholders using
+// key only. (As was done in the contrast array in each colour below, otherwise it will result in a mapping
+// error when mat-palette function is invoked.
+
+
+// Colour Mappings
+
+$texas-ion-primary: (
+    '50': 'e8eaf6',
+    '100': 'c5cbe9',
+    '200': '9fa8da',
+    '300': '7985cb',
+    '400': '5c6bc0',
+    '500': '3f51b5',
+    '600': '394aae',
+    '700': '3140a5',
+    '800': '29379d',
+    '900': '1b278d',
+    'A100': 'c6cbff',
+    'A200': '939dff',
+    'A400': '606eff',
+    'A700': '4757ff',
+    'contrast': (
+      '50': '400',
+      '100': '500',
+      '200': '600',
+      '300': '700',
+      '400': '800',
+      '500': '900',
+      '600': 'A100',
+      '700': 'A200',
+      '800': 'A700',
+      '900': '50',
+      'A100': '100',
+      'A200': '200',
+      'A400': '300',
+      'A700': '400',
+    )
+);
+
+$texas-ion-secondary: (
+    '50': 'e2f9fc',
+    '100': 'b6f1f8',
+    '200': '86e8f4',
+    '300': '55dfef',
+    '400': '30d8eb',
+    '500': '0cd1e8',
+    '600': '0acce5',
+    '700': '08c6e2',
+    '800': '06c0de',
+    '900': '03b5d8',
+    'A100': 'ffffff',
+    'A200': 'cdf5ff',
+    'A400': '9aecff',
+    'A700': '80e7ff',
+    'contrast': (
+      '50': '400',
+      '100': '500',
+      '200': '600',
+      '300': '700',
+      '400': '800',
+      '500': '900',
+      '600': 'A100',
+      '700': 'A200',
+      '800': 'A700',
+      '900': '50',
+      'A100': '100',
+      'A200': '200',
+      'A400': '300',
+      'A700': '400',
+    )
+  );
+  
+  $texas-ion-tertiary: (
+    '50': 'eee9ff',
+    '100': 'd4c7ff',
+    '200': 'b8a2ff',
+    '300': '9b7cff',
+    '400': '8560ff',
+    '500': '7044ff',
+    '600': '683eff',
+    '700': '5d35ff',
+    '800': '532dff',
+    '900': '411fff',
+    'A100': 'ffffff',
+    'A200': 'ffffff',
+    'A400': 'd5ceff',
+    'A700': 'bfb5ff',
+    'contrast': (
+      '50': '400',
+      '100': '500',
+      '200': '600',
+      '300': '700',
+      '400': '800',
+      '500': '900',
+      '600': 'A100',
+      '700': 'A200',
+      '800': 'A700',
+      '900': '50',
+      'A100': '100',
+      'A200': '200',
+      'A400': '300',
+      'A700': '400',
+    )
+  );
+
+  $texas-ion-success: (
+    '50': 'e2fbec',
+    '100': 'b7f5cf',
+    '200': '88eeb0',
+    '300': '58e790',
+    '400': '34e178',
+    '500': '10dc60',
+    '600': '0ed858',
+    '700': '0cd34e',
+    '800': '09ce44',
+    '900': '05c533',
+    'A100': 'eefff1',
+    'A200': 'bbffc8',
+    'A400': '88ff9e',
+    'A700': '6fff89',
+    'contrast': (
+      '50': '400',
+      '100': '500',
+      '200': '600',
+      '300': '700',
+      '400': '800',
+      '500': '900',
+      '600': 'A100',
+      '700': 'A200',
+      '800': 'A700',
+      '900': '50',
+      'A100': '100',
+      'A200': '200',
+      'A400': '300',
+      'A700': '400',
+    )
+  );
+
+  $texas-ion-danger: (
+    '50': 'fde8e8',
+    '100': 'fbc6c6',
+    '200': 'f8a0a0',
+    '300': 'f57a7a',
+    '400': 'f25e5e',
+    '500': 'f04141',
+    '600': 'ee3b3b',
+    '700': 'ec3232',
+    '800': 'e92a2a',
+    '900': 'e51c1c',
+    'A100': 'ffffff',
+    'A200': 'ffe6e6',
+    'A400': 'ffb3b3',
+    'A700': 'ff9a9a',
+    'contrast': (
+      '50': '400',
+      '100': '500',
+      '200': '600',
+      '300': '700',
+      '400': '800',
+      '500': '900',
+      '600': 'A100',
+      '700': 'A200',
+      '800': 'A700',
+      '900': '50',
+      'A100': '100',
+      'A200': '200',
+      'A400': '300',
+      'A700': '400',
+    )
+  );
+  
+  // Create colours required to create custom theme
+  $texas-custom-mat-primary: mat-palette($texas-ion-primary);
+  $texas-custom-mat-accent: mat-palette($texas-ion-tertiary);
+  $texas-custom-mat-warn: mat-palette($texas-ion-danger);
+
+  // Create custom theme using light mode
+  $texas-custom-mat-theme: mat-light-theme($texas-custom-mat-primary, $texas-custom-mat-accent, $texas-custom-mat-warn);
+    
+
+  @include angular-material-theme ($texas-custom-mat-theme);
+  
+  

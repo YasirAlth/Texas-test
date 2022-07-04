@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+        id="cordova-plugin-texas-lasagne"
+        version="1.0.0">
+
+  <name>TEXAS Lasagne</name>
+
+  <description>
+    This plugin will manage the TEXAS LASAGNE TAF Server
+  </description>
+
+  <config-file target="AndroidManifest.xml" parent="/manifest/application">
+    <service 
+      android:name="dst.cordova.lasagne.plugin.TafService" 
+      android:exported="true" 
+      android:process=":dst.cordova.lasagne.plugin.TafService"></service>
+  </config-file>
+
+  <engines>
+    <engine name="cordova" version=">=3.4.0"/>
+  </engines>
+
+  <asset src="www/taf.js" target="js/taf.js"/>
+
+  <asset src="assets/DDS.ini" target="DDS.ini"/>
+  <asset src="assets/LASAGNEProperties.conf" target="LASAGNEProperties.conf"/>
+  <asset src="assets/TAFServer.conf" target="TAFServer.conf"/>
+
+  <js-module src="www/taf.js" name="taf">
+    <clobbers target="taf" />
+  </js-module>
+
+  <platform name="android">
+
+	<framework src="com.android.support:support-compat:27.1.1" />
+ 
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="Taf">
+        <param name="android-package" value="dst.cordova.lasagne.plugin.Taf"/>
+      </feature>
+    </config-file>
+
+    <source-file src="src/android/dst/cordova/lasagne/plugin/ConfigFilesHandler.java" target-dir="src/dst/cordova/lasagne/plugin/"/>
+    <source-file src="src/android/dst/cordova/lasagne/plugin/Taf.java" target-dir="src/dst/cordova/lasagne/plugin/"/>
+    <source-file src="src/android/dst/cordova/lasagne/plugin/TafJni.java" target-dir="src/dst/cordova/lasagne/plugin/" />
+    <source-file src="src/android/dst/cordova/lasagne/plugin/TafService.java" target-dir="src/dst/cordova/lasagne/plugin/" />
+
+    <source-file src="src/android/libs/arm64-v8a/libtaf-jni.so" target-dir="libs/arm64-v8a/" />
+    
+    <source-file src="src/android/libs/arm64-v8a/libACE.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACEXML.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACEXML_Parser.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACEXML_XML_Svc_Conf_Parser.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACE_Compression.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACE_ETCL.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACE_ETCL_Parser.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACE_HTBP.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACE_INet.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACE_Monitor_Control.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACE_RLECompression.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACE_RMCast.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libACE_TMCast.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libActiveService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libCORBAClientService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libCORBActiveService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libCORBAService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libDAF.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libDDSActiveService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libGCRoute.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libgnustl_shared.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libc++_shared.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libKokyu.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libODDS_CORBActiveService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libODDS_DDSActiveService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libODDS_PubSub.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_Dcps.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_FACE.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_Federator.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_InfoRepoDiscovery.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_InfoRepoLib.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_InfoRepoServ.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_Model.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_monitor.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_Multicast.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_Rtps.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_Rtps_Udp.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_Shmem.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_Tcp.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libOpenDDS_Udp.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libPassiveService.so" target-dir="libs/arm64-v8a/" />
+
+    <!--    Rabbit MQ and dependencies-->
+    <source-file src="src/android/libs/arm64-v8a/librabbitmq.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/librabbitmq.so.4" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libssl.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libssl.so.1.1" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libcrypto.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libcrypto.so.1.1" target-dir="libs/arm64-v8a/" />
+
+    <source-file src="src/android/libs/arm64-v8a/libReactiveService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAF.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAF_RabbitMQ.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAFDiscovery.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAFExtensions.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAFNamingService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_AnyTypeCode.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Async_ImR_Client_IDL.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Async_IORTable.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_AV.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_BiDirGIOP.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Catior_i.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CodecFactory.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Codeset.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Compression.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosConcurrency.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosConcurrency_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosConcurrency_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosEvent.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosEvent_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosEvent_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosLifeCycle.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosLifeCycle_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosLoadBalancing.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosNaming.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosNaming_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosNaming_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosNotification.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosNotification_MC.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosNotification_MC_Ext.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosNotification_Persist.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosNotification_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosNotification_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosProperty.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosProperty_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosProperty_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosTime.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosTime_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosTime_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosTrading.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosTrading_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CosTrading_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CSD_Framework.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_CSD_ThreadPool.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DiffServPolicy.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DsEventLogAdmin.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DsEventLogAdmin_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DsEventLogAdmin_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DsLogAdmin.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DsLogAdmin_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DsLogAdmin_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DsNotifyLogAdmin.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DsNotifyLogAdmin_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DsNotifyLogAdmin_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DynamicAny.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_DynamicInterface.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Dynamic_TP.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_EndpointPolicy.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_ETCL.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_FaultTolerance.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_FtNaming.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_FtNamingReplication.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_FTORB_Utils.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_FtRtEvent.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_FTRT_ClientORB.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_FTRT_EventChannel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_FT_ClientORB.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_FT_Naming_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_FT_ServerORB.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_HTIOP.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_IDL_BE.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_IDL_FE.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_IFRService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_IFR_BE.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_IFR_Client.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_IFR_Client_skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_ImR_Activator.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_ImR_Activator_IDL.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_ImR_Client.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_ImR_Locator.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_ImR_Locator_IDL.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_IORInterceptor.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_IORManip.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_IORTable.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Messaging.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Monitor.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Notify_Service.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_ObjRefTemplate.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_PI.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_PI_Server.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_PortableGroup.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_PortableServer.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_ReplicationManagerLib.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RLECompressor.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTCORBA.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTCORBAEvent.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTEvent.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTEventLogAdmin.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTEventLogAdmin_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTEventLogAdmin_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTEvent_Serv.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTEvent_Skel.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTKokyuEvent.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTPortableServer.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTSched.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTSchedEvent.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RTScheduler.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_RT_Notification.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Security.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_SmartProxies.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Strategies.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Svc_Utils.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_TC.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_TC_IIOP.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_TypeCodeFactory.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Utils.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_Valuetype.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTAO_ZIOP.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTexas.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTextParserService.so" target-dir="libs/arm64-v8a/" />
+    <source-file src="src/android/libs/arm64-v8a/libTTY_Asynch.so" target-dir="libs/arm64-v8a/" />
+
+    <lib-file src="src/android/libs/gson-2.8.2.jar" />
+
+  </platform>
+
+</plugin>

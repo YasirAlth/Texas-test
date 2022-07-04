@@ -1,0 +1,58 @@
+{
+  "pointsOfInterest": [
+    {
+      "name": "SLSSA HQ",
+      "tag": "SURFCOM",
+      "lat": -34.958555,
+      "lon": 138.509338
+    },
+    {
+      "name": "Brighton Surf Life Saving Club",
+      "tag": "BSLSC",
+      "lat": -35.018785,
+      "lon": 138.515357
+    },
+    {
+      "name": "Brighton Jetty",
+      "tag": "B_Jetty",
+      "lat": -35.017438,
+      "lon": 138.512036
+    },
+    {
+      "name": "Seacliff Surf Life Saving Club",
+      "tag": "SSLSC",
+      "lat": -35.035698,
+      "lon": 138.517041
+    },
+    {
+      "name": "Aldinga Bay Surf Life Saving Club",
+      "tag": "ABSLSC",
+      "lat": -35.307850,
+      "lon": 138.448056
+    },
+    {
+      "name": "South Port Surf Life Saving Club",
+      "tag": "SPSLSC",
+      "lat": -35.160326,
+      "lon": 138.470382
+    },
+    {
+      "name": "Christies Beach Surf Life Saving Club",
+      "tag": "CBSLSC",
+      "lat": -35.135712,
+      "lon":  138.469454
+    },
+    {
+      "name": "Port Noarlunga Surf Life Saving Club",
+      "tag": "PNSLSC",
+      "lat": -35.149457,
+      "lon":  138.468532
+    },
+    {
+      "name": "Normanville Surf Life Saving Club",
+      "tag": "NSLSC",
+      "lat": -35.445281,
+      "lon":  138.308610
+    }
+  ]
+}

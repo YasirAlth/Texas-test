@@ -1,0 +1,17 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{.Release.Name}}-query-ingress-router
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{.Values.texasServer}}`) && PathPrefix(`/query`)
+      kind: Rule
+      services:
+        - name:  {{ include "texas-query.fullname" . }}
+          port: {{.Values.service.port}}
+      middlewares:
+        - name: {{.Release.Name}}-stripped-prefixes
+  tls:
+    certResolver: default

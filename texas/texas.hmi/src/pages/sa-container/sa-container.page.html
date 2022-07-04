@@ -1,0 +1,40 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+    <texas-connection-status slot="end"></texas-connection-status>
+        <ion-title>
+            Map
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-tabs>
+        <ion-tab-bar slot="bottom" translucent="true">
+            <ion-tab-button tab="map">
+                <ion-icon name="list"></ion-icon>
+                <ion-label>Map</ion-label>
+            </ion-tab-button>
+
+            <ion-tab-button tab="alerts">
+                <ion-icon name="alert"></ion-icon>
+                <ion-label>Alerts</ion-label>
+        <ion-badge color="danger" *ngIf="(numAlerts$ | async) > 0">{{numAlerts$ | async}}</ion-badge>
+            </ion-tab-button>
+
+            <ion-tab-button tab="tasks">
+                <ion-icon name="list"></ion-icon>
+                <ion-label>My Tasks</ion-label>
+        <ion-badge color="danger" *ngIf="(numTasks$ | async) > 0">{{numTasks$ | async}}</ion-badge>
+      </ion-tab-button>
+
+      <ion-tab-button tab="incidents" *roleVisibility="['actionAlertUpdate']">
+        <ion-icon name="list"></ion-icon>
+        <ion-label>Alert Updates</ion-label>
+        <ion-badge color="danger" *ngIf="(numIncidents$ | async) > 0">{{numIncidents$ | async }}</ion-badge>
+            </ion-tab-button>
+        </ion-tab-bar>
+    </ion-tabs>
+</ion-content>

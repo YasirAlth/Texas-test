@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "prometheus-couchdb-exporter.fullname" . }}
+  labels:
+    app: {{ template "prometheus-couchdb-exporter.name" . }}
+    chart: {{ template "prometheus-couchdb-exporter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "prometheus-couchdb-exporter.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "prometheus-couchdb-exporter.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "prometheus-couchdb-exporter.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - "/couchdb-prometheus-exporter"
+            - "-telemetry.address=0.0.0.0:9984"
+            - "-logtostderr"
+            - "-couchdb.uri=http://{{.Release.Name}}-couchdb.{{.Release.Namespace}}.svc.cluster.local:5984"
+            - "-databases={{ .Values.couchdb.databases }}"
+          {{- if .Values.couchdb.username }}
+            - "-couchdb.username={{ .Values.couchdb.username }}"
+          {{ else }}
+            - "-couchdb.username=$(COUCHDB_USER)"
+          {{- end }}
+          {{- if .Values.couchdb.password }}
+            - "-couchdb.password={{ .Values.couchdb.password }}"
+          {{ else }}
+            - "-couchdb.password=$(COUCHDB_PASSWORD)"
+          {{- end }}
+          env:
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{.Release.Name}}-couchdb
+                  key: adminUsername
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{.Release.Name}}-couchdb
+                  key: adminPassword
+          ports:
+            - name: http
+              containerPort: 9984
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+              initialDelaySeconds: 60
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+              initialDelaySeconds: 60
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

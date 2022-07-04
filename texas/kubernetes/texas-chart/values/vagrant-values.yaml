@@ -1,0 +1,50 @@
+serverConfig:
+  TEXAS_SERVER: &vagrantip 192.168.33.11
+  TEXAS_SERVER_AND_PORT: &vagrantipandport 192.168.33.11:31443
+
+#traccar
+traccar:
+  texasServer: *vagrantip
+
+# Texas HMI
+texas-hmi-chart:
+  texasServer: *vagrantip
+
+# Texas Query
+texas-query-chart:
+  texasServer: *vagrantip
+
+#Traefik
+type: NodePort
+ports:
+  - protocol: TCP
+    name: web
+    port: 8000
+    nodePort: 31080
+  - protocol: TCP
+    name: websecure
+    port: 443
+    nodePort: 31443
+  - protocol: TCP
+    name: admin
+    port: 8080
+    nodePort: 31000
+  - protocol: TCP
+    name: amqp
+    port: 5672
+    nodePort: 30200
+
+couchdb:
+  clusterSize: 1
+
+replica-couchdb:
+  clusterSize: 1
+
+rocketchat:
+  extraEnv: |
+    - name: ROOT_URL
+      value: 'https://192.168.33.11:31443/rocketchat'
+    - name: ADMIN_USERNAME
+      value: texas
+    - name: ADMIN_PASS
+      value: texas

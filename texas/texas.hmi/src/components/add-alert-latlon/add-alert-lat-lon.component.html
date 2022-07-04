@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar text-center>
+    <ion-title>Add Alert</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content padding>
+  <ion-list>
+    <ion-item>
+      <ion-label position="floating">Lat</ion-label>
+      <ion-input type="number"  [(ngModel)]="data.lat"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="floating">Lon</ion-label>
+      <ion-input type="number"  [(ngModel)]="data.lon"></ion-input>
+    </ion-item>
+  </ion-list>
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-button expand="block" color="primary" [disabled]="!(data.lat <= 90 && data.lat >= -90 && data.lon <= 180 && data.lon >= -180)" (click)="modalCtrl.dismiss(data);">Ok</ion-button>
+    <ion-button expand="block" color="primary" (click)="modalCtrl.dismiss();">Cancel</ion-button>
+  </ion-toolbar>
+</ion-footer>
+

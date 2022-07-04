@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{.Release.Name}}-texas-configmap
+data:
+    RELEASE_NAME: {{.Release.Name}}
+    NAMESPACE: {{.Release.Namespace}}
+
+    TEXAS_SERVER_SSL: {{.Values.serverConfig.TEXAS_SERVER_SSL}}
+    TEXAS_SERVER: {{.Values.serverConfig.TEXAS_SERVER}}
+    TEXAS_SERVER_AND_PORT: {{.Values.serverConfig.TEXAS_SERVER_AND_PORT}}
+    TEXAS_COUCH_AUTH:  {{.Values.serverConfig.TEXAS_COUCH_AUTH}}
+    traccarStartPort:  {{.Values.serverConfig.traccarStartPort}}
+    traccarEndPort: {{.Values.serverConfig.traccarEndPort}}

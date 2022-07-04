@@ -1,0 +1,81 @@
+<ion-content *ngIf="(numIncidents$ | async) > 0; else emptyAlerts">
+  <ion-list *ngIf="(numUnactionedIncidents$ | async) > 0">
+    <ion-list-header>
+      Unactioned updates
+    </ion-list-header>
+    <ion-item *ngFor="let incidentReport of incidents$ | async | filterIncidents | orderByTimestamp" >
+      <ion-label>
+        <ion-text color="primary">
+          <h2>{{incidentReport.timestamp | date : 'short'}}</h2>
+        </ion-text>
+        <ion-text>
+          <p>Alert</p>
+        </ion-text>
+        <ion-text color="primary">
+          <h2 *ngIf="(alerts$ | async | findAlert : incidentReport.alertId) as alert; else unknownAlert">{{alert.message}}</h2>
+          <ng-template #unknownAlert>Unknown</ng-template>
+        </ion-text>
+        <ion-text>
+          <p>Observer</p>
+        </ion-text>
+        <ion-text color="primary">
+          <h2>{{incidentReport.observer === '' ? 'unknown' : incidentReport.observer}}</h2>
+        </ion-text>
+        <ion-text [ngSwitch]="incidentReport.updateType">
+          <p *ngSwitchCase="updateType.Manifest">Unaccounted persons update</p>
+          <p *ngSwitchCase="updateType.Rescued">Recovered persons update</p>
+          <p *ngSwitchCase="updateType.Unrescued">Sighted persons update</p>
+        </ion-text>
+        <ion-text color="danger">
+          <h2><b>{{incidentReport.newValue}}</b></h2>
+        </ion-text>
+      </ion-label>
+      <ion-icon size="large" name="checkmark-circle" slot="end" color="success" (click)="acceptIncident(incidentReport)"></ion-icon>
+      <ion-icon size="large" name="close-circle" slot="end" color="danger" (click)="declineIncident(incidentReport)"></ion-icon>
+    </ion-item>
+  </ion-list>
+  <ion-list>
+    <ion-list-header>
+      Actioned Updates
+    </ion-list-header>
+    <ion-item *ngFor="let incidentReport of incidents$ | async | filterIncidents:[updateState.Accepted, updateState.Declined] | orderByTimestamp" >
+      <ion-label>
+        <ion-text color="medium">
+          <h2>{{incidentReport.timestamp | date : 'short'}}</h2>
+        </ion-text>
+        <ion-text color="medium">
+          <p>Alert</p>
+        </ion-text>
+        <ion-text color="medium">
+          <h2 *ngIf="(alerts$ | async | findAlert : incidentReport.alertId) as alert; else unknownAlert">{{alert.message}}</h2>
+          <ng-template #unknownAlert>Unknown</ng-template>
+        </ion-text>
+        <ion-text color="medium">
+          <p>Observer</p>
+        </ion-text>
+        <ion-text color="medium">
+          <h2>{{incidentReport.observer === '' ? 'unknown' : incidentReport.observer}}</h2>
+        </ion-text>
+        <ion-text [ngSwitch]="incidentReport.updateType" color="medium">
+          <p *ngSwitchCase="updateType.Manifest">Total missing persons update</p>
+          <p *ngSwitchCase="updateType.Rescued">Rescued persons update</p>
+          <p *ngSwitchCase="updateType.Unrescued">Unrescued persons update</p>
+        </ion-text>
+        <ion-text color="medium">
+          <h2><b>{{incidentReport.newValue}}</b></h2>
+        </ion-text>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>
+<ng-template #emptyAlerts>
+  <ion-content>
+    <ion-item>
+      <ion-label text-wrap>
+        <ion-text color="primary">
+          <h1>There are no unactioned updates.</h1>
+        </ion-text>
+      </ion-label>
+    </ion-item>
+  </ion-content>
+</ng-template>

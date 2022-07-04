@@ -1,0 +1,15 @@
+{
+  "name": "couchdump",
+  "version": "1.0.0",
+  "description": "",
+  "main": "couchdb-fetch.js",
+  "scripts": {
+    "upload": "node couchdb-put.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2"
+  }
+}

@@ -1,0 +1,62 @@
+serverConfig:
+  TEXAS_SERVER: &texasip texas.ct-a.ws
+  TEXAS_SERVER_AND_PORT: texas.ct-a.ws:443
+
+#traccar
+traccar:
+  texasServer: *texasip
+
+  # Texas Query
+texas-query-chart:
+  texasServer: *texasip
+  image:
+    repository: 244843866845.dkr.ecr.ap-southeast-2.amazonaws.com/texas-query
+  replicaCount: 3
+
+  # Texas Query
+texas-replicator-chart:
+  image:
+    repository: 244843866845.dkr.ecr.ap-southeast-2.amazonaws.com/texas-replicator
+
+# Texas HMI
+texas-hmi-chart:
+  texasServer: *texasip
+  image:
+    repository: 244843866845.dkr.ecr.ap-southeast-2.amazonaws.com/texas-hmi
+  replicaCount: 3
+
+texas-service-chart:
+  image:
+    repository: 244843866845.dkr.ecr.ap-southeast-2.amazonaws.com/texas-service-bin
+  replicaCount: 3
+
+texas-logging-chart:
+  image:
+    repository: 244843866845.dkr.ecr.ap-southeast-2.amazonaws.com/texas-logging
+
+couchdb:
+  setup:
+    image: 244843866845.dkr.ecr.ap-southeast-2.amazonaws.com/texas-couch-setup
+  clusterSize: 3
+  persistentVolume:
+    enabled: true
+
+replica-couchdb:
+  persistentVolume:
+    enabled: true
+
+rabbitmq-ha:
+  replicaCount: 3
+
+#traefik?
+deployment:
+  replicas: 1
+
+rocketchat:
+  extraEnv: |
+    - name: ROOT_URL
+      value: 'https://texas.ct-a.ws/rocketchat'
+    - name: ADMIN_USERNAME
+      value: texas
+    - name: ADMIN_PASS
+      value: texas

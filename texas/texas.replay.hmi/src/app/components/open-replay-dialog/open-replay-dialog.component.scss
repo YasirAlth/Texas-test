@@ -1,0 +1,4 @@
+// Remove the checkbox from the mat-selection-list
+::ng-deep.mat-pseudo-checkbox {
+  display: none !important;
+}

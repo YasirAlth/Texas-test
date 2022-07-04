@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  traefik:
+    image: traefik:2.1
+    ports: # HOST:CONTAINER
+      # dashboard port
+      - "8080:8080"
+      # entrypoints
+      - "500-550:500-550"
+    volumes:
+      # could be done via a dockerfile to build into the image
+      - ./traefik.yml:/etc/traefik/traefik.yml

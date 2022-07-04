@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Release.Name}}-traccar-texas-init
+data:
+  traccar-setup.sh: |
+    until $(curl --output /dev/null --silent --head --fail http://localhost:8082); do
+      echo "Waiting for Server"
+      sleep 5
+    done;
+
+    curl  --user admin:admin -i -H "Accept: application/json" -H "Content-Type: application/json" -X PUT  http://localhost:8082/api/users/1/ -d '{"id":1,"attributes":{},"name":"texas","login":null,"email":"texas","phone":null,"readonly":false,"administrator":true,"map":null,"latitude":0.0,"longitude":0.0,"zoom":0,"twelveHourFormat":false,"coordinateFormat":null,"disabled":false,"expirationTime":null,"deviceLimit":-1,"userLimit":0,"deviceReadonly":false,"token":null,"limitCommands":false,"poiLayer":null,"password":"texas"}'
+
+    # GPS Units
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_WP1 (TC)","uniqueId": "864768011119838","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "EXP_LS2 (TC)","uniqueId": "864768011119853","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_LS3 (TC)","uniqueId": "864768011088546","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_IRB1 (TC)","uniqueId": "864768011088579","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_IRB2 (TC)","uniqueId": "864768011119952","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_IRB3 (TC)","uniqueId": "864768011171664","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_IRB4 (TC)","uniqueId": "864768011474910","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_RWC1 (TC)","uniqueId": "864768011475271","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_RWC2 (TC)","uniqueId": "864768011475180","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_RWC3 (TC)","uniqueId": "864768011475131","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_RWC4 (TC)","uniqueId": "864768011475214","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_RWC5 (TC)","uniqueId": "864768011475222","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "ES_Gallantry (TC)","uniqueId": "015136000624259","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "ES_SeaRescue (TC)","uniqueId": "868020030575376","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "ES_CoastGuard" (TC),"uniqueId": "868020030492069","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_ATV1 (TC)","uniqueId": "868020030491269","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "HEIM_LifeRaft1 (TC)","uniqueId": "868020030579980","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "HEIM_LifeRaft2 (TC)","uniqueId": "868020030575459","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "HEIM_RUTH (TC)","uniqueId": "868020030575434","disabled": false}'
+
+    # curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "SLS_WP1 (TC)","uniqueId": "SLS_WP1","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "PT1 (TC)","uniqueId": "PT1","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "PT2 (TC)","uniqueId": "PT2","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "PT3 (TC)","uniqueId": "PT3","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "PT4 (TC)","uniqueId": "PT4","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "PT5 (TC)","uniqueId": "PT5","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "PT6 (TC)","uniqueId": "PT6","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "PT7 (TC)","uniqueId": "PT7","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "PT8 (TC)","uniqueId": "PT8","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "PT9 (TC)","uniqueId": "PT9","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "PT10 (TC)","uniqueId": "PT10","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "ES-St-John1 (TC)","uniqueId": "ES-St-John1","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "ES-St-John2 (TC)","uniqueId": "ES-St-John2","disabled": false}'
+
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "pi4-1","uniqueId": "94445744","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "pi4-6","uniqueId": "8209999","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "pi4-7","uniqueId": "19648537","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "pi4-8","uniqueId": "58164774","disabled": false}'
+    curl  --user texas:texas -i -H "Accept: application/json" -H "Content-Type: application/json" -X POST http://localhost:8082/api/devices -d '{"id": 0, "name": "pi4-9s","uniqueId": "50635666","disabled": false}'
+
+  README.info: |
+      Managed by Kubernetes as a configmap

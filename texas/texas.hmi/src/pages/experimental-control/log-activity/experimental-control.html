@@ -1,0 +1,37 @@
+<ion-content class="ion-padding">
+    <ion-list>
+        <ion-item *ngFor="let logEntry of loggingEvents$ | async | orderByTimestamp">
+            <div class="ion-padding" [ngSwitch]="logEntry.entryType">
+                <ng-template [ngSwitchCase]="'start'">
+                    <ion-icon name="play"></ion-icon>
+                </ng-template>
+                <ng-template [ngSwitchCase]="'stop'">
+                    <ion-icon name="flag"></ion-icon>
+                </ng-template>
+                <ng-template [ngSwitchCase]="'observation'">
+                    <ion-icon name="add-circle"></ion-icon>
+                </ng-template>
+                <ng-template [ngSwitchCase]="'note'">
+                    <ion-icon name="add"></ion-icon>
+                </ng-template>
+                <ng-template ngSwitchDefault>
+                    <ion-icon name=""></ion-icon>
+                </ng-template>
+            </div>
+            <ion-label>
+                <h2>{{ logEntry.entryType | titlecase }}</h2>
+                <h3>{{ logEntry.timestamp | date: 'short' }}</h3>
+                <h4>{{ logEntry.entryLoggerDeviceName }}</h4>
+                <!--We won't be displaying the deviceId for aesthetic reasons. However, the log will keep this information.-->
+                <p>{{ logEntry.entryValue }}</p>
+            </ion-label>
+        </ion-item>
+    </ion-list>
+</ion-content>
+
+<ion-footer>
+    <ion-toolbar>
+        <ion-button (click)="presentActionSheet()" expand="block">Show Controls</ion-button>
+        <ion-button (click)="archiveEntries()" expand="block">Archive Log</ion-button>
+    </ion-toolbar>
+</ion-footer>

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Release.Name}}-traefik-dynamic-config
+data:
+  traefik-dynamic-config.yaml: |
+    tls:
+      certificates:
+        - certFile: /path/to/domain.cert
+          keyFile: /path/to/domain.key
+        - certFile: /path/to/other-domain.cert
+          keyFile: /path/to/other-domain.key
+
+  README.info: |
+      Managed by Kubernetes as a configmap

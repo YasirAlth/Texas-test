@@ -1,0 +1,12 @@
+{
+  "rescueLocations": [
+    {
+      "locationId": 0,
+      "name": "North Haven",
+      "position": {
+        "lat": -34.7874,
+        "lon": 138.4820
+      }
+    }
+  ]
+}

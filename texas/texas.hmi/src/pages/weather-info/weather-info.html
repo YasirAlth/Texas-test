@@ -1,0 +1,19 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>
+            Weather
+        </ion-title>
+        <ion-buttons slot="start">
+            <ion-button (click)="dismiss()">
+                <ion-icon color="white" name="close"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+
+
+<ion-content class="ion-padding">
+    <weather-widget [settings]="settings"></weather-widget>
+    <!--<button ion-button full (click)="dismiss()">Close</button>-->
+</ion-content>

@@ -1,0 +1,27 @@
+{{- $root := . -}}
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: traefik
+spec:
+  type: {{.Values.type}}
+  ports: {{- range .Values.ports }}
+    - port: {{ .port }}
+      protocol:  {{ .protocol }}
+      name:  {{ .name }}
+      {{ if and $root.Values.type (eq $root.Values.type "NodePort") }}
+      nodePort:  {{ .nodePort }}
+      {{ end }}
+   {{- end }}
+{{/*    {{- range untilStep (.Values.serverConfig.traccarStartPort|int) (.Values.serverConfig.traccarEndPort|int) 1 }}*/}}
+     {{- range untilStep 5001 5003 1 }}
+    - protocol: TCP
+      name: traccar{{ . }}
+      port: {{ . }}
+      {{ if and $root.Values.type (eq $root.Values.type "NodePort") }}
+      nodePort: {{ add 25000 . }}
+      {{ end }}
+     {{- end }}
+  selector:
+    app: traefik

@@ -1,0 +1,31 @@
+<ion-content class='ion-padding'>
+    <form [formGroup]="inputFormGroup" (ngSubmit)="sendMissionData()" id="inputFormGroup1">
+        <ion-list>
+            <ion-item>
+                <ion-label>Data Update Type</ion-label>
+                <ion-select interface="popover" [(ngModel)]="selectedMissionData.updateType" formControlName="updateTypeCtrl" required>
+                    <ion-select-option *ngFor="let updateType of supportedUpdateTypes | keyvalue">{{ updateType.value }}</ion-select-option>
+                </ion-select>
+            </ion-item>
+            <ion-item>
+                <ion-label>Reporter</ion-label>
+                <ion-input  [(ngModel)]="selectedMissionData.reporter" formControlName="reporterCtrl" required></ion-input>
+            </ion-item>
+            <ion-item>
+                <ion-label>Alert</ion-label>
+                <ion-select interface="popover" [(ngModel)]="selectedMissionData.alertId" formControlName="alertIdCtrl" required>
+                    <ion-select-option *ngFor="let alert of alerts$ | async" [value]='alert.id'>{{ alert.message }}</ion-select-option>
+                </ion-select>
+            </ion-item>
+            <ion-item>
+                <ion-label>Number</ion-label>
+                <ion-input type="number" min="0" [(ngModel)]="selectedMissionData.number" formControlName="numberCtrl" required></ion-input>
+            </ion-item>
+
+            <!-- Unfortunately had to check the validity of the form controls individually, form group validity is not correctly representing the validity of child components (form controls). -->
+            <ion-button expand="block" type="submit" [disabled]="!inputFormGroup.get('updateTypeCtrl').valid||!inputFormGroup.get('reporterCtrl').valid||!inputFormGroup.get('alertIdCtrl').valid||!inputFormGroup.get('numberCtrl').valid">Send Mission Data</ion-button>
+
+        </ion-list>
+
+    </form>
+</ion-content>

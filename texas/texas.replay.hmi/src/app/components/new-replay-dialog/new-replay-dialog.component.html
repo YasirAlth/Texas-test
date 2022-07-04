@@ -1,0 +1,32 @@
+<h1 mat-dialog-title>New Replay</h1>
+<mat-dialog-content>
+  <section class="example-section">
+    <mat-form-field class="example-margin">
+      <mat-select placeholder="Trials" [(value)]="selectedTrial">
+        <mat-option *ngFor="let trial of data.trials" [value]="trial">
+          {{trial.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </section>
+  <section class="example-section">
+    <mat-form-field class="example-margin">
+      <input matInput type="string" placeholder="Start time" [value]="getTrialStartTime()" disabled>
+    </mat-form-field>
+  </section>
+  <section class="example-section">
+    <mat-form-field class="example-margin">
+      <input matInput type="string" placeholder="End time" [value]="getTrialEndTime()" disabled>
+    </mat-form-field>
+  </section>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <section class="example-section">
+    <button mat-raised-button color="primary" (click)="onSubmit()">
+      Create
+    </button>
+    <button mat-raised-button color="primary" (click)="onCancel()">
+      Cancel
+    </button>    
+  </section>
+</mat-dialog-actions>

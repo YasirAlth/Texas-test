@@ -1,0 +1,26 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>
+            Add {{textType | titlecase }}
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+    <ion-item>
+        <ion-label position="stacked">Timestamp</ion-label>
+        <ion-input readonly>{{ this.timestamp | date: 'EEE LLL dd yyyy hh:mm:ss a (z)' }}</ion-input>
+    </ion-item>
+    <ion-item>
+        <ion-label position="stacked">{{ textType | titlecase }} Details</ion-label>
+        <ion-textarea [(ngModel)]='this.userInput' rows="6" placeholder="Enter {{ textType }} details here"></ion-textarea>
+    </ion-item>
+
+</ion-content>
+
+<ion-footer>
+    <ion-toolbar>
+        <ion-button color="primary" (click)="saveModal()" expand="block">Save</ion-button>
+        <ion-button color="primary" (click)="cancelModal()" expand="block">Cancel</ion-button>
+    </ion-toolbar>
+</ion-footer>

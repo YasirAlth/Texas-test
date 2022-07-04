@@ -1,0 +1,20 @@
+<h1 mat-dialog-title>Open Replay</h1>
+<mat-dialog-content>
+  <section class="example-section">
+    <mat-selection-list #session>
+      <mat-list-option *ngFor="let session of sessions" [value]="session" (click)="getValue($event)">
+        {{session.id}}
+      </mat-list-option>
+    </mat-selection-list>
+  </section>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <section class="example-section">
+    <button mat-raised-button color="primary" (click)="onSubmit()">
+      Open
+    </button>
+    <button mat-raised-button color="primary" (click)="onCancel()">
+      Cancel
+    </button>
+  </section>
+</mat-dialog-actions>

@@ -1,0 +1,8 @@
+[submodule "texas.cordova"]
+	path = texas.cordova
+	url = ../texas.cordova.git
+	branch = develop
+[submodule "texas.restart"]
+	path = texas.restart
+	url = ../texas.restart.git
+	branch = develop

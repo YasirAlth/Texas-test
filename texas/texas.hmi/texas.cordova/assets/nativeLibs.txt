@@ -1,0 +1,24 @@
+###############################################################################
+#
+# This file contains an ordered list of the required native libs to load
+# before using the JNI methods in this plugin
+#
+###############################################################################
+
+# Minimum libraries for the LASAGNE TAFServer
+ACE
+TAO
+TAO_AnyTypeCode
+TAO_PortableServer
+TAO_IORTable
+DAF
+TAO_CodecFactory
+TAO_PI
+TAO_Strategies
+TAO_Svc_Utils
+TAO_CosNaming
+TAF
+Texas
+
+# The C++ implementation of the JNI methods
+taf-jni

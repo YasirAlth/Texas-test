@@ -1,0 +1,17 @@
+project(TAF_RabbitMQ) : daflib, rabbitmq {
+
+    sharedname =* 
+
+    dynamicflags  +=  RABBITMQ_BUILD_DLL
+
+    prebuild      +=   perl $(ACE_ROOT)/bin/generate_export_file.pl RabbitMQ > RabbitMQ_Export.h
+
+    Source_Files {
+
+        RabbitMQConnector.cpp
+    }
+
+    verbatim(gnuace, top,1) {
+      CCFLAGS += -std=c++11 -Wno-deprecated-declarations
+    }
+}

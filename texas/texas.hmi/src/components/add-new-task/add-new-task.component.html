@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar text-center>
+    <ion-title>Add Task</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content padding>
+  <ion-list>
+    <ion-item>
+      <ion-label position="floating">Title</ion-label>
+      <ion-textarea [(ngModel)]="data.title"></ion-textarea>
+    </ion-item>
+    <ion-item>
+      <ion-label position="floating">Description</ion-label>
+      <ion-textarea [(ngModel)]="data.description"></ion-textarea>
+    </ion-item>
+  </ion-list>
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-button expand="block" color="primary" (click)="modalCtrl.dismiss(data);">Ok</ion-button>
+    <ion-button expand="block" color="primary" (click)="modalCtrl.dismiss();">Cancel</ion-button>
+  </ion-toolbar>
+</ion-footer>
+

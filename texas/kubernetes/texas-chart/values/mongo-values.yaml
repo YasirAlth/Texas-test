@@ -1,0 +1,12 @@
+# looks like the rocketchat chart can't handle the mongodb
+# credentials as a secret, so we'll just have to do it this way
+# should probably be randomised in production, but could be
+# mitigated by just not exposing it
+rocketchat:
+  mongodb:
+    mongodbRootPassword: this-password-used-for-oplog
+    mongodbUsername: rocketchat
+    mongodbPassword: password-for-rocketchat
+    mongodbDatabase: rocketchat
+    persistence:
+      enabled: false

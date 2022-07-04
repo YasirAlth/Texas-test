@@ -1,0 +1,24 @@
+[submodule "texas.logging"]
+	path = texas.logging
+	url = ../texas.logging.git
+[submodule "texas.query"]
+	path = texas.query
+	url = ../texas.query.git
+[submodule "texas.service"]
+	path = texas.service
+	url = ../texas.service.git
+[submodule "texas.hmi"]
+	path = texas.hmi
+	url = ../texas.hmi.git
+[submodule "texas.replay"]
+	path = texas.replay
+	url = ../texas.replay.git
+[submodule "texas.replay.hmi"]
+	path = texas.replay.hmi
+	url = ../texas.replay.hmi.git
+[submodule "texas.tasking"]
+	path = texas.tasking
+	url = ../texas.tasking.git
+[submodule "texas.replicator"]
+	path = texas.replicator
+	url = ../texas.replicator.git

@@ -1,0 +1,70 @@
+{
+  "agencies":[
+    {
+      "agencyId": 0,
+      "agencyName": "Unspecified",
+      "agencyAbbr": "Unspecified",
+      "categories": [9]
+    },
+    {
+      "agencyId": 1,
+      "agencyName": "Surf Life Saving SA",
+      "agencyAbbr": "SLSSA",
+      "categories": [0,1,2,3,4,5,6,7,8,9]
+    },
+    {
+      "agencyId": 2,
+      "agencyName": "St John's Ambulance",
+      "agencyAbbr": "St John",
+      "categories": [9]
+    },
+    {
+      "agencyId": 3,
+      "agencyName": "Airservices Australia",
+      "agencyAbbr": "ASA",
+      "categories": [9]
+    },
+    {
+      "agencyId": 4,
+      "agencyName": "Australian Maritime Safety Authority",
+      "agencyAbbr": "AMSA",
+      "categories": [9]
+    },
+    {
+      "agencyId": 5,
+      "agencyName": "Fire Department",
+      "agencyAbbr": "Fire Dep",
+      "categories": [9]
+    },
+    {
+      "agencyId": 6,
+      "agencyName": "Environment Protection Authority",
+      "agencyAbbr": "EPA",
+      "categories": [9]
+    },
+    {
+      "agencyId": 7,
+      "agencyName": "Royal Australian Air Force",
+      "agencyAbbr": "RAAF",
+      "categories": [9]
+    },
+    {
+      "agencyId": 8,
+      "agencyName": "SA Police",
+      "agencyAbbr": "SAPOL",
+      "categories": [9]
+    },
+    {
+      "agencyId": 9,
+      "agencyName": "VMR",
+      "agencyAbbr": "VMR",
+      "categories": [9]
+    },
+    {
+      "agencyId": 10,
+      "agencyName": "Defence Science & Technology",
+      "agencyAbbr": "DST",
+      "categories": [7]
+    }
+  ]
+}

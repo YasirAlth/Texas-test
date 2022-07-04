@@ -1,0 +1,38 @@
+project(Texas) : taflib, rabbitmq {
+
+  verbatim(vs2017, debug_cmd) {
+    "$(DAF_ROOT)/bin/TAFServer"
+  }
+
+  verbatim(vs2017, debug_cmd_args) {
+    "-TAFServices Texas.conf"
+  }
+
+  sharedname = *
+  dynamicflags += TEXAS_BUILD_DLL
+  prebuild += perl $(ACE_ROOT)/bin/generate_export_file.pl Texas > Texas_export.h
+
+  includes += ../json/single_include
+  includes += ../lasagne-connector/rabbitmq
+  libs     += TAF_RabbitMQ
+  after    += TAF_RabbitMQ
+
+  Header_Files {
+    DataModel.h
+    TexasService.h
+    ../mongoose/mongoose.h
+  }
+
+  Source_Files {
+    TexasService.cpp
+    ../mongoose/mongoose.c
+  }
+
+  Svc_Conf_Files {
+    Texas.conf
+  }
+
+  verbatim(gnuace, top, 1) {
+    CCFLAGS += -std=c++11 -Wno-deprecated-declarations
+  }
+}

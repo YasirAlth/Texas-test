@@ -1,0 +1,73 @@
+{
+  "categories": [
+    {
+      "categoryId": 0,
+      "categoryName": "Unspecified",
+      "abbreviation": ""
+    },
+    {
+      "categoryId": 1,
+      "categoryName": "Jet Rescue Boat",
+      "abbreviation": "JRB",
+      "gpsEnabled": true,
+      "compassEnabled": true,
+      "alertSoundOn": true
+    },
+    {
+      "categoryId": 2,
+      "categoryName": "Offshore Rescue Boat",
+      "abbreviation": "ORB"
+    },
+    {
+      "categoryId": 3,
+      "categoryName": "Rigid Hull Inflatable Boat",
+      "abbreviation": "RIB"
+    },
+    {
+      "categoryId": 4,
+      "categoryName": "Inflatable Rescue Boat",
+      "abbreviation": "IRB",
+      "gpsEnabled": true,
+      "compassEnabled": true,
+      "alertSoundOn": true
+    },
+    {
+      "categoryId": 5,
+      "categoryName": "Rescue Water Craft",
+      "abbreviation": "RWC",
+      "gpsEnabled": true,
+      "compassEnabled": true,
+      "alertSoundOn": true
+    },
+    {
+      "categoryId": 6,
+      "categoryName": "Command and Control",
+      "abbreviation": "C2",
+      "alertSoundOn": true,
+      "roles": [
+        "sendAlert"
+      ]
+    },
+    {
+      "categoryId": 7,
+      "categoryName": "Experimental Control",
+      "abbreviation": "EXP",
+      "roles": [
+        "sendAlert"
+      ]
+    },
+    {
+      "categoryId": 8,
+      "categoryName": "All Terrain Vehicle",
+      "abbreviation": "ATV"
+    },
+    {
+      "categoryId": 9,
+      "categoryName": "Patrol",
+      "abbreviation": "PAT",
+      "gpsEnabled": true,
+      "compassEnabled": true,
+      "alertSoundOn": true
+    }
+  ]
+}

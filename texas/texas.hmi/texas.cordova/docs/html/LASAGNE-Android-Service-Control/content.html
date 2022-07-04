@@ -1,0 +1,473 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- 4.8.1 -->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="combined.css"/>
+    <link rel="stylesheet" href="inline_styles.css"/>
+    <style type="text/css">
+        /* <![CDATA[ */
+            
+        /* ]]> */
+    </style>
+</head>
+<body>
+
+<div>
+    </div>
+<div class='page table-of-contents'>
+<h1>Table of Contents</h1>
+<ul>
+<li><a href="#Bookmark1">LASAGNE Android Service Control Investigation</a><a href="#Bookmark1" class="page-number"></a></li>
+<ul>
+<li><a href="#Bookmark2">Goals</a><a href="#Bookmark2" class="page-number"></a></li>
+<li><a href="#Bookmark3">Outcomes</a><a href="#Bookmark3" class="page-number"></a></li>
+<li><a href="#Bookmark4">Assumed Knowledge</a><a href="#Bookmark4" class="page-number"></a></li>
+<li><a href="#Bookmark5">Preventing Blocking the Main/UI Thread</a><a href="#Bookmark5" class="page-number"></a></li>
+<li><a href="#Bookmark6">Running as a Shared Global Process</a><a href="#Bookmark6" class="page-number"></a></li>
+<li><a href="#Bookmark7">Keeping the Service Process Alive </a><a href="#Bookmark7" class="page-number"></a></li>
+<li><a href="#Bookmark9">Process cleanup </a><a href="#Bookmark9" class="page-number"></a></li>
+<li><a href="#Bookmark10">Bound Services</a><a href="#Bookmark10" class="page-number"></a></li>
+<li><a href="#Bookmark11">Ensuring Graceful Shutdown of the TafServer when forcefully stopped</a><a href="#Bookmark11" class="page-number"></a></li>
+<li><a href="#Bookmark13">User Interaction</a><a href="#Bookmark13" class="page-number"></a></li>
+<li><a href="#Bookmark14">What Next?</a><a href="#Bookmark14" class="page-number"></a></li>
+</ul>
+</ul>
+</div>
+<div class='page wiki-page'>
+<div class='wiki-title'>
+<h1 id='Bookmark1'>LASAGNE Android Service Control Investigation</h1>
+</div>
+<div class='wiki-content'>
+<a name="Bookmark2"></a><h1 id="Bookmark2">Goals</h1><ul><li>Investigate alternative ways of running and controlling a LASAGNE TAFServer on the Android Operating System</li></ul><a name="Bookmark3"></a><h1 id="Bookmark3">Outcomes</h1><ul><li>Ability to control (start/stop) the TAFServer without blocking the main/UI thread</li><li>Allow the TAFServer to be shared between application by running as a global service</li><li>Prevent the Operating System from easily killing the service by running it as a foreground service</li><li>Start the TAFServer when the Android Operating System is booted by handling broadcast events on startup</li><li>Understand how further control (e.g. SDDU-like control) can be acheived from an Application by binding the service, using the Intent or Broadcast system</li></ul><a name="Bookmark4"></a><h1 id="Bookmark4">Assumed Knowledge</h1><p>There is a good introduction to&nbsp;<strong><a href="https://app.pluralsight.com/library/courses/android-fundamentals-services" class="external-link" rel="nofollow">Android Services Fundamentals on pluralsight</a></strong>.</p><ul><li>Fundamentals<ul><li>See the&nbsp;<strong><a href="https://developer.android.com/guide/components/fundamentals.html" class="external-link" rel="nofollow">Application Fundamentals</a></strong></li><li>Understand Android component types, component activation and the manifest files</li><li>Less relevant components include the Activities (only basic knowledge required) and Content Providers (not used at all in this work)</li><li>If you are reading this page, it is assumed you probably already know the fundamentals; you have probably already built and ran an application that uses the&nbsp;&nbsp;<strong><a href="https://developer.android.com/ndk/index.html" class="external-link" rel="nofollow">Android NDK</a>&nbsp;</strong>in&nbsp;<strong><a href="https://developer.android.com/studio/index.html" class="external-link" rel="nofollow">Android Studio</a></strong>&nbsp;with&nbsp;<strong><a href="https://developer.android.com/studio/build/index.html" class="external-link" rel="nofollow">Gradle</a></strong>&nbsp;and&nbsp;<strong><a href="https://developer.android.com/ndk/guides/cmake.html" class="external-link" rel="nofollow">CMake</a></strong>.</li><li>If you haven't already built and ran an application, you may want to install the&nbsp;<span style="color: rgb(0,0,0);">Vagrant VM development environment, cross-compile LASAGNE for Android and try building a project first (see&nbsp;<strong><a href="#Bookmark1" title="LASAGNE Android Service Control Investigation">LASAGNE Android Support</a></strong>)</span><ul><li><em>Note the latest instructions for VM and cross-compilation may have changed from the above page, recommended getting the VM from git and following the readme</em></li></ul></li></ul></li><li>Services<br /><ul><li>See the&nbsp;<strong><a href="https://developer.android.com/guide/components/services.html" class="external-link" rel="nofollow">Services Guide</a></strong>,&nbsp;<strong><a href="https://developer.android.com/reference/android/app/Service.html" class="external-link" rel="nofollow">Service API Reference</a>&nbsp;</strong>and<strong>&nbsp;<a href="https://github.com/codepath/android_guides/wiki/Starting-Background-Services" class="external-link" rel="nofollow">Starting Background Services</a></strong></li><li>Understand the service types, managing the service lifecycle and strategies for dealing with the system closing services (e.g. do nothing, restart, etc.)</li></ul></li><li>Processes / Threads<ul><li>See the&nbsp;<strong><a href="https://developer.android.com/guide/components/processes-and-threads.html" class="external-link" rel="nofollow">Processes and Threads Guide</a></strong>,&nbsp;<strong><a href="https://developer.android.com/guide/components/activities/process-lifecycle.html" class="external-link" rel="nofollow">Process Lifecycle</a></strong>,&nbsp;<strong><a href="https://developer.android.com/reference/android/os/Process.html" class="external-link" rel="nofollow">Process API</a>&nbsp;</strong>and<strong>&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/index.html?java/util/concurrent/package-summary.html" class="external-link" rel="nofollow">Java Util Concurrency</a></strong></li><li>Understand how the system prioritises processes, allocates components to specific processes, and when it will reclaim memory and destroy processes.</li></ul></li><li>Broadcasts / Publish-Subscribe<ul><li>See the&nbsp;<strong><a href="https://developer.android.com/guide/components/broadcasts.html" class="external-link" rel="nofollow">Broadcasts Guide</a></strong>&nbsp;and&nbsp;<strong><a href="https://developer.android.com/reference/android/content/BroadcastReceiver.html" class="external-link" rel="nofollow">Broadcasts Receiver</a></strong></li><li>Understand its use as a publish-subscribe mechanism and the effects on the process state (ability to override priorities and increase the likelihood of a process being killed by the system)</li></ul></li><li>Activity Lifecycle<ul><li>See the&nbsp;<strong><a href="https://developer.android.com/guide/components/activities/activity-lifecycle.html" class="external-link" rel="nofollow">Activity Lifecycle Guide</a></strong>&nbsp;and&nbsp;<strong><a href="https://www.coursera.org/learn/androidapps/lecture/cqMr4/activity-lifecycle-operations-part-1" class="external-link" rel="nofollow">Activity Lifecycle Operations from the course at Vanderbilt University</a></strong></li><li>Understand when activities can be killed abrubtly (i.e. from the pause state) and when the onDestroy method is called (providing a last chance to cleanup gracefully)</li></ul></li><li>Service Lifecycle<ul><li>See&nbsp;<strong><a href="https://developer.android.com/guide/components/services.html#LifecycleCallbacks" class="external-link" rel="nofollow">Implementing the Service Lifecycle Callbacks</a></strong></li></ul></li></ul><a name="Bookmark5"></a><h1 id="Bookmark5">Preventing Blocking the Main/UI Thread</h1><p>By default, an&nbsp;<strong>Android Service</strong>&nbsp;runs&nbsp;in the&nbsp;<strong>main thread&nbsp;</strong>of its&nbsp;<strong>hosting process</strong>. Services that perform&nbsp;<strong>instensive work or blocking operations</strong>&nbsp;must be started on a&nbsp;<strong>new thread&nbsp;</strong>otherwise the application will become unresponse.</p><p>The LASAGNE TAFServer's public interface run method suggests the concept of enabling startup both<strong>&nbsp;asynchronously</strong>&nbsp;or<strong>&nbsp;synchronously&nbsp;</strong>depending on the value of the boolean&nbsp;<strong>wait_for_completion</strong>&nbsp;parameter. Ideally no new thread needs to be created for the JNI call when wait_for_completion=false, but during investigation it was observed that this resulted in an immediate shutdown. It may not have been due to the TAFServer itself but inconsequently because the service subclassed&nbsp;<strong><a href="https://developer.android.com/reference/android/app/IntentService.html" class="external-link" rel="nofollow">IntentService</a></strong>, which uses a<strong>&nbsp;&quot;work queue processor&quot; pattern</strong>&nbsp;(Active Object) to offload tasks from an applicatons main thread. The IntentService has certain limitations: it can only process one item at a time, queue items will be lost if the service is destroyed and&nbsp;<strong>the service is destroyed when its queue is emptied</strong>. The final limitation was one that was not obvious, as it was expected that the service would remain dormant even when the work queue was empty. The documentation used terms such as the service will be &quot;stopped&quot; rather than destroyed, which is true but handleStopService calls onDestroy (see the image below). It was almost certainly the reason for the TAFServer being immediately shutdown since the onDestroy makes a JNI call which invokes DAF::ShutdownHandler.send_shutdown().&nbsp;</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" height="244" src="img_1.png" data-image-src="/confluence/download/attachments/67474222/image2017-12-6_17-50-53.png?version=1&amp;modificationDate=1518486032793&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="67474478" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-12-6_17-50-53.png" data-base-url="https://labs.consilium.technology/confluence" data-linked-resource-content-type="image/png" data-linked-resource-container-id="67474222" data-linked-resource-container-version="5" width="624" /></span></p><p>The following statement in this Stack Overflow &quot;<a href="https://stackoverflow.com/questions/7771323/what-is-the-difference-between-an-intentservice-and-a-service" class="external-link" rel="nofollow">What is the difference between an IntentService and a Service</a>&quot; succinctly describes the different purposes of the IntentService and Service base classes.</p><p style="margin-left: 30.0px;"><em>&quot;<span style="color: rgb(36,39,41);">In short, a Service is a broader implementation for the developer to set up background operations, while an IntentService is useful for &quot;fire and forget&quot; operations, taking care of background Thread creation and cleanup.&nbsp;</span></em><em><strong>Service</strong>&nbsp;is an application component representing either an application's desire to perform a longer-running operation while not interacting with the user or to supply functionality for other applications to use.&nbsp;</em><em><strong>IntentService</strong>&nbsp;is a base class for IntentService&nbsp;Services that handle asynchronous requests&nbsp;(expressed as Intents) on demand. Clients send requests through&nbsp;<code>startService(Intent)</code>calls; the service is started as needed, handles each Intent in turn using a worker thread, and stops itself when it runs out of work.&quot;</em></p><p>There are other reasons to avoid the use of IntentService for most use cases in future. For instance, the IntentService is subject to the&nbsp;<strong><a href="https://developer.android.com/about/versions/oreo/background.html" class="external-link" rel="nofollow">Background Execution Limits</a></strong>&nbsp;imposed in Android 8.0+&nbsp;and in most cases the<strong>&nbsp;<a href="https://developer.android.com/reference/android/support/v4/app/JobIntentService.html" class="external-link" rel="nofollow">JobIntentService</a></strong>&nbsp;will provide richer functionality (note we are still using Android 7.0 though so the JobIntentService is something to investigate in future). It became clear that on Android 7.0 we need to subclass an ordinary Service but handle offloading of tasks from the main thread to worker threads in some other way. We tried using were&nbsp;<strong><a href="https://en.wikipedia.org/wiki/POSIX_Threads" class="external-link" rel="nofollow">pthreads&nbsp;</a></strong>in the native c++ code,&nbsp;<strong><a href="https://developer.android.com/reference/android/os/AsyncTask.html" class="external-link" rel="nofollow">AsyncTasks</a>&nbsp;</strong>and finally Java's&nbsp;<span style="color: rgb(53,56,51);"><strong><a href="https://docs.oracle.com/javase/8/docs/api/index.html?java/util/concurrent/package-summary.html" class="external-link" rel="nofollow">java.util.concurrent</a></strong>&nbsp;package components. Pthreads were only really used as a quick interim solution as they are not portable. AsyncTasks were promising because they publish progress back to the UI Thread, however it turns out that they are also not suited to long lived operations. The most portable and durable solution was to use the facilities provided by the&nbsp;<span><strong><a href="https://docs.oracle.com/javase/8/docs/api/index.html?java/util/concurrent/package-summary.html" class="external-link" rel="nofollow">java.util.concurrent</a></strong>&nbsp; package,&nbsp;</span><span>specifically an&nbsp;</span><strong><a href="https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html" class="external-link" rel="nofollow">ExecutorService</a>&nbsp;</strong>interface with a&nbsp;<span>&nbsp;</span><strong><a href="https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool()" class="external-link" rel="nofollow">CachedThreadPool</a>&nbsp;</strong>implementation<strong>.&nbsp;</strong>Broken down to the most simple parts (other aspects such as logging removed), the code looks like this:</span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">public class TafControllerService extends Service { 
+ // ...
+&nbsp;
+ // Executor to run intent messages asynchronously
+ private Executor mTaskExecutor = Executors.newCachedThreadPool();
+&nbsp;
+ // JNI native binding method, internally starts TAFServer and blocks
+    protected native int startTafServer();
+&nbsp;
+ // JNI native binding method, internally DAF::ShutdownHandler.send_shutdown message
+    protected native int shutdownTafServer();
+&nbsp;
+ // Called from main activity context startService(...)
+    @Override
+    public int onStartCommand(final Intent intent, final int flags, final int startId) {
+  mTaskExecutor.execute(() -&gt; {
+   // Start TAFServer (blocks until shutdown)
+   final int returnValue = startTafServer();
+   // ... handle return code here then kill the process to prevent SIGSEGV...
+   Process.killProcess(Process.myPid());
+  }
+  // return flag to restart app if it is killed by the OS
+  return START_STICKY;
+ }
+&nbsp;
+ // Called from main activity context stopService(...)
+    @Override
+    public void onDestroy() {
+        mTaskExecutor.execute(() -&gt; {
+            final int returnValue = shutdownTafServer();
+            // ... handle return code here...
+        });
+        super.onDestroy();
+    }
+&nbsp;
+ // ...
+}</pre>
+</div></div><p>On a final note, after the realisation that it was the IntentService that may have been causing the immediate shutdown of the TAFServer, we may be able to try setting wait_for_completion=false in the native code to start the server without making the JNI call in a new thread. It's questionable whether the DAF::ShutdownHandler.send_shutdown() call needs to be done on a seperate thread. However, there may be situations in the future where we want to offload other SDDU-like commands onto worker threads. For that purpose the java<strong>&nbsp;<a href="https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executor.html" class="external-link" rel="nofollow">Executor</a></strong>&nbsp;is still a useful tool, especially on Android 7 (which does not have a&nbsp;<strong><a href="https://developer.android.com/reference/android/support/v4/app/JobIntentService.html" class="external-link" rel="nofollow">JobIntentScheduler</a></strong>).</p><a name="Bookmark6"></a><h1 id="Bookmark6">Running as a Shared Global Process</h1><p>By default, Android Services are started in the same process as the application or context that starts the service. In some cases it is perfectly acceptable to have the TAFServer run in the application and shutdown when the application is closed. For various reasons such as keeping the footprint small, it may be desirable to run only a single TAFServer on android and allow any application to use a single TAFServer. The service controlling the lifecycle of the TAFServer can be declared to start in a seperate process or globally through the&nbsp;<strong>android:process</strong>&nbsp;attribute of the service element manifest file. As stated in the documentatio for the&nbsp;<strong><a href="https://developer.android.com/guide/topics/manifest/service-element.html" class="external-link" rel="nofollow">Service Element</a></strong>:</p><p style="margin-left: 30.0px;">&quot;...If the name assigned to this attribute begins with a colon (':'), a new process, private to the application, is created when it's needed and the service runs in that process. If the process name begins with a lowercase character, the service will run in a global process of that name, provided that it has permission to do so. This allows components in different applications to share a process, reducing resource usage.&quot;</p><p><span style="color: rgb(0,0,0);">Simply providing a name starting with a lower case letter results in the service running in a different process to the application that starts it. This extract, directly from the manifest file demonstrates that addition of the android:process attribution with the service name starting with a lowercase letter:</span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">        &lt;service
+            android:name=&quot;dstg.lasagne.saki.service.TafControllerService&quot;
+            android:exported=&quot;true&quot;
+            android:process=&quot;dstg.lasagne.saki.service.TafControllerService&quot;&gt;&lt;/service&gt;</pre>
+</div></div><p>The following screenshots show the console logs when running the application in debug mode in Android Studio with the entry above in the manifest:</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image confluence-content-image-border" width="624" src="img_2.png" data-image-src="/confluence/download/attachments/67474222/image2017-12-11_12-20-15.png?version=1&amp;modificationDate=1518486051759&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="67474479" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-12-11_12-20-15.png" data-base-url="https://labs.consilium.technology/confluence" data-linked-resource-content-type="image/png" data-linked-resource-container-id="67474222" data-linked-resource-container-version="5" height="380" /></span></p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image" width="624" src="img_3.png" data-image-src="/confluence/download/attachments/67474222/image2017-12-11_12-20-59.png?version=2&amp;modificationDate=1518486134000&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="67474480" data-linked-resource-version="2" data-linked-resource-type="attachment" data-linked-resource-default-alias="image2017-12-11_12-20-59.png" data-base-url="https://labs.consilium.technology/confluence" data-linked-resource-content-type="image/png" data-linked-resource-container-id="67474222" data-linked-resource-container-version="5" height="369" /></span></p><a name="Bookmark7"></a><h1 id="Bookmark7">Keeping the Service Process Alive&nbsp;</h1><p>Android has several mechanisms to prioritise and kill off services based on the current state of the system. Background services (which are the default) are more suceptable than foreground services to being shutdown. Fortunately, the return value of the service's onStartCommand provides the Android Operating System with a strategy for handling this situation. The flags&nbsp;<strong><a href="https://developer.android.com/reference/android/app/Service.html#START_STICKY" class="external-link" rel="nofollow">START_STICKY</a></strong>,&nbsp;<strong><a href="https://developer.android.com/reference/android/app/Service.html#START_NOT_STICKY" class="external-link" rel="nofollow">START_NOT_STICKY</a></strong>, and&nbsp;<strong><a href="https://developer.android.com/reference/android/app/Service.html#START_REDELIVER_INTENT" class="external-link" rel="nofollow">START_REDELIVER_INTENT</a></strong>&nbsp;indicate if the OS shoud immediately restart the service, or not depending on the particular value (See the Android&nbsp;<strong><a href="https://developer.android.com/guide/components/services.html" class="external-link" rel="nofollow">Service Component Guide</a>&nbsp;</strong>and&nbsp;<strong><a href="https://developer.android.com/reference/android/app/Service.html" class="external-link" rel="nofollow">Service API documentation</a></strong>&nbsp;for more information). In a case where LASAGNE is not bound to a particular application and shared, we want to be able to go further than this and do our best to keep the service's process alive (segway to Android&nbsp;<strong><a href="https://developer.android.com/guide/components/processes-and-threads.html" class="external-link" rel="nofollow">Processes and Threads</a></strong>&nbsp;and&nbsp;<strong><a href="https://developer.android.com/guide/components/activities/process-lifecycle.html" class="external-link" rel="nofollow">Process Lifecycle</a></strong>). It is possible to change the process type from background to foreground to raise the importance of the process and make it harder for Android to kill the service. If you do not do this, every time you close the application that started the global service will result in the service itself being restarted. Once the service type is set to foreground it will only be susceptible to be killed as an absolute last resort in low memory state. To quote the Android process lifecycle page:</p><p style="margin-left: 30.0px;">&quot;...There will only ever be a few such processes in the system, and these will only be killed as a last resort if memory is so low that not even these processes can continue to run. Generally, at this point, the device has reached a memory paging state, so this action is required in order to keep the user interface responsive...&quot;</p><p><span style="color: rgb(0,0,0);">The code to raise the process priority is shown below. The name of the startForeground method can be confusing as it needs to be called after startService. For this reason, it is placed in onCreate to ensure it is always called. A notification is provided as a parameter to inform the user that the service is running (assumedly to allow users to kill foreground processes that are monopolising resources).</span></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">public class TafControllerService extends Service {
+    // ... 
+   @Override
+    public void onCreate() {
+        //...
+  // Caution: The integer ID that you give to startForeground() must not be 0.
+        startForeground(1, new NotificationCompat.Builder(this)
+                .setContentTitle(&quot;TAFControllerService&quot;)
+                .setContentText(&quot;Moving service to foreground&quot;)
+                .setContentIntent(PendingIntent.getActivity(this, 0,
+                        new Intent(this, MainActivity.class), 0)).build());
+  //...
+   }
+   //...
+}</pre>
+</div></div><p>It is worth noting that once a project is promoted to the foreground a notification is displayed to indicate this as described in Android documentation's &quot;<strong><a href="https://developer.android.com/guide/components/services.html#Foreground" rel="nofollow" class="external-link">Running a service in the foreground</a></strong>&quot;:</p><p style="margin-left: 30.0px;">&quot;A foreground service is a service that the user is actively aware of and is not a candidate for the system to kill when low on memory. A foreground service must provide a notification for the status bar, which is placed under the&nbsp;<em>Ongoing</em>&nbsp;heading. This means that the notification cannot be dismissed unless the service is either stopped or removed from the foreground.&quot;&nbsp;</p><p>You can check if a service is running in the foregroundwith&nbsp;<strong><a href="https://developer.android.com/studio/command-line/dumpsys.html" class="external-link" rel="nofollow">dumpsys</a></strong>&nbsp;by running the following command in a terminal:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">adb shell dumpsys activity processes</pre>
+</div></div><p>You will find a record for the process:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">*APP* UID 10210 ProcessRecord{7697d71 14317:dstg.lasagne.saki.service/u0a210}
+  user #0 uid=10210 gids={50210, 9997, 3003}
+  requiredAbi=arm64-v8a instructionSet=arm64
+  dir=/data/app/dstg.lasagne.saki.service-2/base.apk publicDir=/data/app/dstg.lasagne.saki.service-2/base.apk data=/data/user/0/dstg.lasagne.saki.service
+  packageList={dstg.lasagne.saki.service}
+  compat={480dpi}
+  thread=android.app.ApplicationThreadProxy@2890756
+  pid=14317 starting=false
+  lastActivityTime=-1m32s538ms lastPssTime=-17s913ms nextPssTime=+29m42s25ms
+  adjSeq=92639 lruSeq=0 lastPss=20MB lastSwapPss=215KB lastCachedPss=20MB lastCachedSwapPss=215KB
+  cached=true empty=true
+  oom: max=1001 curRaw=900 setRaw=900 cur=900 set=900
+  curSchedGroup=0 setSchedGroup=0 systemNoUi=false trimMemoryLevel=0
+  curProcState=14 repProcState=14 pssProcState=14 setProcState=14 lastStateTime=-48s497ms
+  hasShownUi=true pendingUiClean=false hasAboveClient=false treatLikeActivity=false
+  lastWakeTime=0 timeUsed=0
+  lastCpuTime=0 timeUsed=0
+  lastRequestedGc=-4m1s139ms lastLowMemory=-4m1s139ms reportLowMemory=false
+  Activities:
+    - ActivityRecord{f81002ad0 u0 dstg.lasagne.saki.service/.MainActivity t67}
+  Connected Providers:
+    - 32129e8/com.android.providers.settings/.SettingsProvider-&gt;14317:dstg.lasagne.saki.service/u0a210 s1/1 u0/0 +4m1s82ms</pre>
+</div></div><p><br />The LRU list will also show an item for the process:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">Proc #48: prcp  F/S/SF trm: 0 14981:dstg.lasagne.saki.service.TafControllerService/u0a210 (fg-service)</pre>
+</div></div><p>There is a useful discussion on stack overflow called &quot;<a href="https://stackoverflow.com/questions/6645193/foreground-service-being-killed-by-android" class="external-link" rel="nofollow">Foreground service being killed by android</a>&quot; whereby some people have had issues with foreground services being killed and answers that discuss some of the steps required to check the priority in detail above. This discussion was particularly useful to help determine what situations a service may be downgraded from foreground, perhaps due to bugs such as&nbsp;<a href="https://issuetracker.google.com/issues/36967794" class="external-link" rel="nofollow">Android Issue 36967794 Foreground service killed when receiving broadcast after activity swiped away in task list</a>. We actually tried to reproduce issue 36967794 but inspection of the processes through dumpsys showed that the process was still running in the foreground. Inspection of the Android code from version 4.2 to 7.0 showed vast changes which is why some of those issues may now be obselete. It is still worth noting that the Android documentation itself mentions that receiving broadcasts can change the priority of a service and that the Operating System always has the right to kill a process (but it should only occur in very low memory situations when set to foreground).</p><p>The following screenshots show the service running for over 47 hours before stopping it. Note that the RAM status was relatively low so we have not tried doing this will many applications running yet.</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image confluence-content-image-border" height="400" src="img_4.png" data-image-src="/confluence/download/attachments/67474222/Screenshot_20171214-173851.png?version=1&amp;modificationDate=1518486113163&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="67474481" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="Screenshot_20171214-173851.png" data-base-url="https://labs.consilium.technology/confluence" data-linked-resource-content-type="image/png" data-linked-resource-container-id="67474222" data-linked-resource-container-version="5" width="225" /></span>&nbsp; &nbsp;<span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image confluence-content-image-border" height="400" src="img_5.png" data-image-src="/confluence/download/attachments/67474222/Screenshot_20171214-173859.png?version=1&amp;modificationDate=1518486136972&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="67474483" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="Screenshot_20171214-173859.png" data-base-url="https://labs.consilium.technology/confluence" data-linked-resource-content-type="image/png" data-linked-resource-container-id="67474222" data-linked-resource-container-version="5" width="225" /></span></p><a name="Bookmark8"></a><h2 id="Bookmark8">Starting the Service on System Boot</h2><p>The Android system sends broadcasts when various system events occur, for instance when the system boots up. We can register to handle the system bootup event and use this mechanism to start the TAFServer immediately on bootup. The following is required to add a handler/receiver for the boot event:</p><ol><li>Add uses-permission entry to the manifest file</li><li>Add receiver entry to the manifest file, specifying the class which will handle the intents in the intent-filter</li><li>Create a class which subclasses BroadcastReceiver to handle the event and start the TAFServerService on a worker thread.</li></ol><p>Manifest:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">&lt;uses-permission android:name=&quot;android.permission.RECEIVE_BOOT_COMPLETED&quot; /&gt;
+   
+     &lt;receiver
+            android:name=&quot;dstg.lasagne.saki.service.MyBroadcastReceiver&quot;
+            android:exported=&quot;true&quot;
+            android:permission=&quot;android.permission.RECEIVE_BOOT_COMPLETED&quot;&gt;
+            &lt;intent-filter&gt;
+                &lt;action android:name=&quot;android.intent.action.BOOT_COMPLETED&quot;/&gt;
+                &lt;!-- Apparently HTC devices need QUICKBOOT_POWERON --&gt;
+                &lt;action android:name=&quot;android.intent.action.QUICKBOOT_POWERON&quot; /&gt;
+            &lt;/intent-filter&gt;
+        &lt;/receiver&gt;</pre>
+</div></div><p><br />BroadcastReceiver:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">public class MyBroadcastReceiver extends BroadcastReceiver {
+    private static final String TAG = &quot;MyBroadcastReceiver&quot;;
+
+    @Override
+    public void onReceive(final Context context, final Intent intent) {
+        final PendingResult pendingResult = goAsync();
+        AsyncTask&lt;String, Integer, String&gt; asyncTask = new AsyncTask&lt;String, Integer, String&gt;() {
+            @Override
+            protected String doInBackground(String... params) {
+                // Start the TAFServer service
+                Intent intent = new Intent(context, TafControllerService.class);
+                context.startService(intent);
+
+                // Start the TAFServer GUI
+                intent = new Intent(context, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+
+                // Must call finish() so the BroadcastReceiver can be recycled.
+                pendingResult.finish();
+                return log;
+            }
+        };
+        asyncTask.execute();
+    }
+}</pre>
+</div></div><a name="Bookmark9"></a><h1 id="Bookmark9">Process cleanup&nbsp;</h1><p>In this investigation we were encountering an segmentation fault error when trying to run the TAFServer after it had been previously been stopped. This problem is apparent in the application because&nbsp; and the log but the most information about it can be gathered from inspecting the output of&nbsp;<em>adb shell dumpsys activity processes:</em></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">Bad processes:
+  Bad process dstg.lasagne.saki.service uid 10055: crashed at time 264831
+    Short msg: Native crash
+    Long msg: Native crash: Segmentation fault
+    Stack:
+      *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+      Build fingerprint: 'samsung/heroltexx/herolte:7.0/NRD90M/G930FXXU1DQBH:user/release-keys'
+      Revision: '8'
+      ABI: 'arm64'
+      pid: 11191, tid: 11232, name: pool-1-thread-2  &gt;&gt;&gt; dstg.lasagne.saki.service:taf &lt;&lt;&lt;
+      signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x6f72504641544d
+          x0   000000710bc2297f  x1   000000710bf15d88  x2   000000710a71f9e8  x3   0000000000000001
+          x4   706f72504641542d  x5   fffffffffffffffd  x6   0000000000808000  x7   7affff514b4f79fe
+          x8   7f7f7f7f7f7f7fff  x9   feff01fcd49b0a1d  x10  7f7f7fffffff7f7f  x11  0101010101010101
+          x12  0000000000000028  x13  0000000000000000  x14  ffffffffffffffff  x15  000000712dde95fc
+          x16  0000007121e6b418  x17  0000007121c9b8e4  x18  000000712d1243f4  x19  000000710a71f9f0
+          x20  000000710a71feb0  x21  000000712181a480  x22  0000000000000001  x23  000000710a71f9d8
+          x24  000000710a71f9e0  x25  000000710a71f9e8  x26  000000710bbc96a4  x27  0000000000000000
+          x28  000000710bc3fb1a  x29  000000710a71f930  x30  0000007121e00fcc
+          sp   000000710a71f930  pc   0000007121e00ff8  pstate 0000000060000000
+       
+      backtrace:
+          #00 pc 0000000000108ff8  /data/app/dstg.lasagne.saki.service-1/lib/arm64/libACE.so (__gxx_personality_v0+1188)
+          #01 pc 00000000000d6f1c  /data/app/dstg.lasagne.saki.service-1/lib/arm64/libgnustl_shared.so (_Unwind_RaiseException+180)
+          #02 pc 0000000000109324  /data/app/dstg.lasagne.saki.service-1/lib/arm64/libACE.so (__cxa_throw+124)
+          #03 pc 000000000006b8f8  /data/app/dstg.lasagne.saki.service-1/lib/arm64/libTAF.so (_ZN9TAFServerC2EiPPc+248)
+          #04 pc 000000000000e59c  /data/app/dstg.lasagne.saki.service-1/lib/arm64/libTAFServerService.so (Java_dstg_lasagne_saki_service_TafControllerService_startTafServer+280)
+          #05 pc 0000000000256760  /data/app/dstg.lasagne.saki.service-1/oat/arm64/base.odex (offset 0x218000)</pre>
+</div></div><p>It is widely suggested online for example on stack overflow threads (e.g.&nbsp;<a href="https://stackoverflow.com/questions/10662446/invalid-heap-address-and-fatal-signal-11/11812665#11812665" class="external-link" rel="nofollow">Invalid heap address and fatal signal 11</a>)&nbsp;that this issue occurs from a function being called from two different threads at the same time (i.e. synchronisation issues). We didn't get time to investigate this in great detail but perhaps unloading the libraries and clearing the ACE singletons before trying to run the TAFServer in the same process may have helped (perhaps a test should be written to try running LASAGNE, shutting down and restarting from an executable on another operating system to see if the same problem occurs). Given the limited time to investigate, we worked around this by ensuring that the process the service is running in is always killed in the onDestroy method so a new process will be used when the TAFServer is restarted. This was acheived with the following statement directly after the blocking call to run the TAFServer:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">Process.killProcess(Process.myPid());</pre>
+</div></div><a name="Bookmark10"></a><h1 id="Bookmark10">Bound Services</h1><p>It is stated when to create a bound service in the documentation for&nbsp;<a href="https://developer.android.com/guide/components/services.html#CreatingBoundService" class="external-link" rel="nofollow">creating bound services</a>:</p><p style="margin-left: 30.0px;"><em>&quot;Create a bound service when you want to interact with the service from activities and other components in your application or to expose some of your application's functionality to other applications through interprocess communication (IPC).&quot;</em></p><p>At the present moment, we have only got to a point of starting and stopping the TafService using the Android Service. However, in future we may want to be able to allow control of the TafServer (similar to SDDU). We will need to be able expose further TafServer functionality to the activities that use it. We've already investigated the IntentService and determined that it is inappropriate for receiving commands since the service will be destroyed when there are no more intents in the queue. The JobIntentService may be another option if it can be kept running in the foreground as the longer it remains idle, the more likely the Operating System will kill it. In anycase, a bound service may provide advantages over these other services particularly if we have any intention of sharing the TafServer between applications. Bound services will be destroyed when there is no clients bound to the service.&nbsp;The service should still be setup to run in the foreground to prevent tear down of the TAFServer when it is idle (unless requirements dicate a different approach).&nbsp;</p><p>A bound service can be created in three ways:&nbsp;</p><ol><li><strong><a href="https://developer.android.com/guide/components/bound-services.html#Binder" class="external-link" rel="nofollow">Extending the binder class</a></strong>&nbsp;(in-process binding only);</li><li>Using a&nbsp;<strong><a href="https://developer.android.com/guide/components/bound-services.html#Messenger" class="external-link" rel="nofollow">messenger</a></strong>&nbsp;(work accross processes, single threaded); or</li><li>Using<strong>&nbsp;<a href="https://developer.android.com/guide/components/aidl.html" class="external-link" rel="nofollow">AIDL</a></strong>&nbsp;(work accross processes, multi-threaded).&nbsp;</li></ol><p>We first started trying the<em>&nbsp;binder class</em>&nbsp;approach but abandoned the code since the limitations of in-process only binding are not useful for quite a few of our use cases. We instead tried the&nbsp;<em>messenger</em>&nbsp;approach as shown in the following code fragments:</p><p><br /></p><p>The service:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">// ...
+&nbsp;
+public class TafService extends Service {
+
+    private static final String CLASS_NAME = TafService.class.getSimpleName();
+    private static final String TAG = CLASS_NAME;
+
+    // ---------------------------------------------------------------------------------------------
+
+
+&nbsp;
+    /** Command to the service to start TafServer */
+    static final int MSG_START = 1;
+
+    /** Command to the service to shutdown TafServer */
+    static final int MSG_SHUTDOWN = 2;
+
+    /** Key to a bundle's server arguments */
+    static final String BUNDLE_DATA_SERVER_ARGS = &quot;DATA_SERVER_ARGS&quot;;
+
+    /** Key to a bundle's server config files */
+    static final String BUNDLE_DATA_SERVER_CONFIG_FILES = &quot;DATA_SERVER_CONFIG_FILES&quot;;
+
+    /**
+     * Handler of incoming messages from clients.
+     */
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(final Message msg) {
+            switch (msg.what) {
+            case MSG_START:
+                final Bundle bundle = msg.getData();
+                final ArrayList&lt;String&gt; args = bundle.getStringArrayList(BUNDLE_DATA_SERVER_ARGS);
+                final ArrayList&lt;String&gt; files = bundle.getStringArrayList(BUNDLE_DATA_SERVER_CONFIG_FILES);
+                handle_start(args, files);
+                break;
+            case MSG_SHUTDOWN:
+                handle_shutdown();
+                break;
+            default:
+                super.handleMessage(msg);
+            }
+        }
+    }
+&nbsp;
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Target we publish for clients to send messages to IncomingHandler.
+     */
+    private final Messenger mMessenger = new Messenger(new IncomingHandler());
+&nbsp;
+    @Override
+    public void onCreate() {
+        Log.d(TAG, &quot;onCreate()&quot;);
+
+        startForeground(1, new NotificationCompat.Builder(this).setContentTitle(CLASS_NAME)
+                .setContentText(&quot;Moving service to foreground&quot;).build());
+
+        super.onCreate();
+    }
+&nbsp;
+    @Nullable
+    @Override
+    public IBinder onBind(final Intent intent) {
+        Log.d(TAG, &quot;onBind(...)&quot;);
+
+        return mMessenger.getBinder();
+    }
+&nbsp;
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, &quot;onDestroy()&quot;);
+
+        handle_shutdown();
+
+        super.onDestroy();
+    }
+&nbsp;
+    // ---------------------------------------------------------------------------------------------
+
+    private void handle_start(final ArrayList&lt;String&gt; args, final ArrayList&lt;String&gt; files) {
+        Log.d(TAG, &quot;handle_start()&quot;);
+
+        mTaskExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+
+                /*
+                 * Move the config files from the assets &quot;www&quot; folder to the &quot;files&quot; directory.
+                 * This is done so that the config files can be found by the native libraries.
+                 */
+                new ConfigFilesHandler(getApplicationContext(), files).handle();
+
+                Log.d(TAG, &quot;Starting TafServer...&quot;);
+                final int returnValue = TafJni.startTafServer(args.toArray(new String[args.size()]));
+                Log.d(TAG, &quot;startTafServer() returned: &quot; + returnValue);
+
+                /*
+                 * once complete, crudely kill the process not a recommended approach but re-using
+                 * this process will result in SIGSEGV fault
+                 */
+                Process.killProcess(Process.myPid());
+            }
+        });
+    }
+
+    private void handle_shutdown() {
+        Log.d(TAG, &quot;handle_shutdown()&quot;);
+
+        // Is there anyway to get a call back when shutdown??
+        Log.d(TAG, &quot;Shutting down TafServer...&quot;);
+        final int returnValue = TafJni.shutdownTafServer();
+        Log.d(TAG, &quot;shutdownTafServer() returned: &quot; + returnValue);
+    }
+}</pre>
+</div></div><p><br /></p><p>The JNI interface (note the libs were determined by using&nbsp;<em>objdump</em>&nbsp;to see which libs are required by the TAF lib. All the libs were cross-compiled for arm-v8a)</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">// ...
+public class TafJni {
+
+    private static final String CLASS_NAME = TafJni.class.getSimpleName();
+    private static final String TAG = CLASS_NAME;
+
+    // ---------------------------------------------------------------------------------------------
+
+    static {
+
+        final String[] libs = {
+            &quot;ACE&quot;,
+            &quot;TAO&quot;,
+            &quot;TAO_AnyTypeCode&quot;,
+            &quot;TAO_PortableServer&quot;,
+            &quot;TAO_IORTable&quot;,
+            &quot;DAF&quot;,
+            &quot;TAO_CodecFactory&quot;,
+            &quot;TAO_PI&quot;,
+            &quot;TAO_Strategies&quot;,
+            &quot;TAO_Svc_Utils&quot;,
+            &quot;TAO_CosNaming&quot;,
+            &quot;TAF&quot;,
+            &quot;taf-jni&quot;
+        };
+        
+        for (String lib : libs) {
+            Log.d(TAG, &quot;Load Native Libraries - &quot; + lib);
+            System.loadLibrary(lib);
+        }
+        
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    protected static native int startTafServer(String[] args);
+    protected static native int shutdownTafServer();
+
+}</pre>
+</div></div><p><br /></p><p>The Client:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">//...
+&nbsp;
+public class Taf extends CordovaPlugin {
+
+    private static final String CLASS_NAME = Taf.class.getSimpleName();
+    private static final String TAG = CLASS_NAME;
+&nbsp;
+    // ---------------------------------------------------------------------------------------------
+
+    /** Messenger for communicating with the service. */
+    private Messenger mService = null;
+
+    /** Flag indicating whether we have called bind on the service. */
+    private boolean mBound;
+
+    private JSONArray mData;
+&nbsp;
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Class for interacting with the main interface of the service.
+     */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        /*
+         * Called when the connection with the service has been established, giving us the object we
+         * can use to interact with the service. e are communicating with the service using a Messenger
+         * so here we get a client-side representation of that from the raw IBinder object.
+         */
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            Log.d(TAG, &quot;onServiceConnected(...)&quot;);
+            mService = new Messenger(service);
+            mBound = true;
+            handle_start();
+        }
+
+        // Called when connection with service unexpectedly disconnected -- that is, its process crashed.
+        public void onServiceDisconnected(final ComponentName className) {
+            Log.d(TAG, &quot;onServiceDisconnected(...)&quot;);
+            mService = null;
+            mBound = false;
+        }
+    };
+
+    // --------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean execute(String action, JSONArray data, CallbackContext callbackContext) throws JSONException {
+        Log.d(TAG, &quot;execute(...)&quot;);
+
+        mData = data; // TODO Temporary - may be overridden by subsequent calls
+
+        if (&quot;start&quot;.equals(action))
+            return handle_bind();
+        if (&quot;shutdown&quot;.equals(action))
+            return handle_unbind();
+
+        return false;
+    }
+&nbsp;
+    /**
+     * The final call you receive before your activity is destroyed.
+     */
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, &quot;onDestroy()&quot;);
+        handle_unbind();
+        super.onDestroy();
+    };
+ 
+    // ... other lifecycle callbacks
+&nbsp;
+    // --------------------------------------------------------------------------------------------
+
+    private boolean handle_bind() {
+        Log.d(TAG, &quot;handle_bind()&quot;);
+
+        final Intent intent = new Intent(cordova.getActivity(), TafService.class);
+        cordova.getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+        return true;
+    }
+
+    private boolean handle_unbind() {
+        Log.d(TAG, &quot;handle_unbind()&quot;);
+
+        if (mBound) {
+            handle_shutdown();
+            cordova.getActivity().unbindService(mConnection);
+            mBound = false;
+        }
+        return true;
+    }
+
+
+}</pre>
+</div></div><p style="margin-left: 30.0px;">A bound service can be created in three ways:&nbsp;<strong><a href="https://developer.android.com/guide/components/bound-services.html#Binder" class="external-link" rel="nofollow">extending the binder class</a></strong>&nbsp;(in-process binding only), using a&nbsp;<strong><a href="https://developer.android.com/guide/components/bound-services.html#Messenger" class="external-link" rel="nofollow">messenger</a></strong>&nbsp;(work accross processes, single threaded) or using<strong>&nbsp;<a href="https://developer.android.com/guide/components/aidl.html" class="external-link" rel="nofollow">AIDL</a></strong>&nbsp;(work accross processes, multi-threaded). If the TAFServer service is intended to be contained within the application process, we can use the binder class approach.&nbsp;If we intend to share the TAFServer, we must use messenger or AIDL approach.&nbsp;</p><p>We must be mindful that binding a service can change the priority of the service and the process it runs in. For instance, binding with the flag&nbsp;<span style="color: rgb(36,39,41);">Context.BIND_ABOVE_CLIENT runs the risk of the service being downgraded at least on older versions of Android (see Stack Overflow discussion:&nbsp;<a href="https://stackoverflow.com/questions/6645193/foreground-service-being-killed-by-android" rel="nofollow" class="external-link">Foreground service being killed by android</a>).</span></p><a name="Bookmark11"></a><h1 id="Bookmark11">Ensuring Graceful Shutdown of the TafServer when forcefully stopped</h1><p>An service can be killed abruptly in several ways depending on its visibility settings:</p><ol><li>Any service can be stopped from the &quot;Running Services&quot; menu;&nbsp;</li><li>Foreground services can be stopped from selecting the item in the notifications menu; and</li><li>Non-global services can be stopped when the application is closed (i.e. swiped away) or if it is bound, all applications that are bound to it are closed.</li></ol><p>This behaviour was first observed and noted when working on the TEXAS RISE project whereby the service is declared in the manifest like so:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">    &lt;service 
+      android:name=&quot;dst.cordova.lasagne.plugin.TafService&quot; 
+      android:exported=&quot;true&quot; 
+      android:process=&quot;:dst.cordova.lasagne.plugin.TafService&quot;&gt;&lt;/service&gt;</pre>
+</div></div><p>Since the name assigned to the android:process attribute beings with a colon, it indicates that the service is started in a new process that is private to the application. We experimented with starting the service using both Intents (unbound) and Messages (bound). In both approaches &quot;swiping away&quot; the application resulted in forcefully killing the application. Understanding the lifecycle of the Application and the order in which methods of the&nbsp;<strong><a href="https://github.com/apache/cordova-android/blob/master/framework/src/org/apache/cordova/CordovaPlugin.java" class="external-link" rel="nofollow">CordovaPlugin</a></strong>&nbsp;class are called were required to ensure that when the service is killed, the TafServer has a chance to shutdown gracefully. The important method was the&nbsp;<strong><a href="https://github.com/apache/cordova-android/blob/master/framework/src/org/apache/cordova/CordovaPlugin.java" class="external-link" rel="nofollow">CordovaPlugin</a></strong>'s onDestroy method which is the final call received before the application is destroyed. It is in this onDestroy method that a call must be made to stop the service as in this example for an unbound service:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">    /**
+     * The final call you receive before your activity is destroyed.
+     */
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, &quot;onDestroy()&quot;);
+        final Intent intent = new Intent(cordova.getActivity(), TafService.class);
+        cordova.getActivity().stopService(intent);
+        super.onDestroy();
+    };</pre>
+</div></div><p>Of course, once onDestroy has finished, the service can be terminated at any time if it is a background thread. Therefore we really need to employ a strategy to ensure that the TafServer can close itself out first. Two approaches may be:</p><ol><li>Ensure the service priority is set to the foreground, this may even require setting the priority to foreground in the service's onDestroy method (if it was not already running in the foreground); or</li><li>Use wait and notify to hold off returning from onDestroy until the TafServer is shutdown (we haven't tried this but it should work since the shutdown will result in the call&nbsp;<em>startTafServer&nbsp;</em>blocked in another thread will return and can then notify competion.</li></ol><a name="Bookmark12"></a><h2 id="Bookmark12">Implications of the Activity lifecycle on graceful shutdown</h2><p>The following diagram displays the activity lifecycle (as presented in&nbsp;<strong><a href="https://developer.android.com/guide/components/activities/activity-lifecycle.html" class="external-link" rel="nofollow">Android Documentation Activity Lifecycle</a></strong>).&nbsp;</p><p><span class="confluence-embedded-file-wrapper"><img class="confluence-embedded-image" src="img_6.png" data-image-src="/confluence/download/attachments/67474222/activity_lifecycle.png?version=1&amp;modificationDate=1518486172274&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="67474484" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="activity_lifecycle.png" data-base-url="https://labs.consilium.technology/confluence" data-linked-resource-content-type="image/png" data-linked-resource-container-id="67474222" data-linked-resource-container-version="5" /></span></p><p>The points of interest for the TEXAS RISE project were especially the onDestroy() method and the onPause() method. We have already discussed the onDestroy() method and how it can be used as a last chance to gracefully shutdown a service the activity is using. However, it turns out that the applications process can be terminated from the paused state, without calling onDestroy(). The following quote outlines the issue:</p><p style="margin-left: 30.0px;"><em>&quot;<span style="color: rgb(36,39,41);">If an activity is paused or stopped, the system can drop the activity from memory by either asking it to finish, or simply killing its process.&quot; (<strong><a href="https://stackoverflow.com/questions/14375720/android-destroying-activities-killing-processes" class="external-link" rel="nofollow">Stack Overflow: Android Destroying Activities Killing Processes</a>)</strong></span></em></p><p>We actually need to do further investigation into this to understand the effect on private serivces when activities are killed. At present we only know that a service running in the same process as the activity will be destroyed for certain. We don't yet know if a service running in another process that is private to the application will also be destroyed. Regardless of the outcomes it raises questions:</p><ol><li>If the process of the service is destroyed, it won't be destroyed gracefully; and</li><li>If the process of the service is not destroyed, it will continue to run, potentially reporting track positions etc. when the application is not running.</li></ol><p>We can minimise the risk of the second question by sending a message to the TafService to inturn pause the services relevant to us in the TafServer, but of course the service and process will still exist. In anycase it is worth considering what to do in the paused state, perhaps we should continue publishing our position and continue receiving updates especially if we want to show historical information to the user. On the otherhand if we only want to see the situation at the present time, it may make sense to pause the service. It would be good to know if any of the service hooks are called prior to killing the related Activities process.</p><p>Noteworthy:</p><p style="margin-left: 30.0px;"><em><span style="color: rgb(36,39,41);">&quot;Generally system kills the whole process this means all data including activities and static fields are destroyed. This is NOT done nicely - you won't get onDestroy or finialize() for any of your paused/stopped activities. This is why saveInstanceState() is called just before onPause method. onPause is basically the last method where you should save something because after this method you could never see onStop or onDestroy. System can just kill the process destroying all of your objects whatever they hold and whatever they are doing.&quot;&nbsp;<em>(<strong><a href="https://stackoverflow.com/questions/14375720/android-destroying-activities-killing-processes" class="external-link" rel="nofollow">Stack Overflow: Android Destroying Activities Killing Processes</a>)</strong></em></span></em></p><a name="Bookmark13"></a><h1 id="Bookmark13">User Interaction</h1><p>To demonstrate this work, a simple user interface was created (only for the unbound example) allowing the user to start and stop the TAFServer (then we were able to inspect the process through adb or the on device services list):</p><p><span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image confluence-content-image-border" height="400" src="img_7.png" data-image-src="/confluence/download/attachments/67474222/Screenshot_20171214-175957.png?version=1&amp;modificationDate=1518486192115&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="67474485" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="Screenshot_20171214-175957.png" data-base-url="https://labs.consilium.technology/confluence" data-linked-resource-content-type="image/png" data-linked-resource-container-id="67474222" data-linked-resource-container-version="5" width="225" /></span>&nbsp; &nbsp;<span class="confluence-embedded-file-wrapper confluence-embedded-manual-size"><img class="confluence-embedded-image confluence-content-image-border" height="400" src="img_8.png" data-image-src="/confluence/download/attachments/67474222/Screenshot_20171214-173821.png?version=1&amp;modificationDate=1518486210248&amp;api=v2" data-unresolved-comment-count="0" data-linked-resource-id="67474486" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="Screenshot_20171214-173821.png" data-base-url="https://labs.consilium.technology/confluence" data-linked-resource-content-type="image/png" data-linked-resource-container-id="67474222" data-linked-resource-container-version="5" width="225" /></span></p><p><span style="color: rgb(0,0,0);">It would be good to in future extend this simple interface to at the very least show an updated status of the TAFServer and the state of the services currently loaded in it.</span></p><a name="Bookmark14"></a><h1 id="Bookmark14">What Next?</h1><ul><li>For some projects simply being able to run a pre-configured LASAGNE service in the foreground, bound to a single application may be the best usage scenario. Other projects may benefit from leveraging a shared TAFServer, in that case it may be useful to allow dynamic deployment and control of services with an enhanced SDDU-like GUI. A good starting point would be to build on the bound service example above and add some jni methods to control the TAFServer.</li><li>It will be a good idea to run some tests with several other applications running. Perhaps run the TAFServer with OpenDDS ping/pong services (Note we have tested with RabbitMQ Example to date).</li><li>Based on the above findings we shouldn't need a wakelock for a foreground service, but in case we find the the server is not running we may want to look into a&nbsp;<strong><a href="https://developer.android.com/training/scheduling/wakelock.html" class="external-link" rel="nofollow">wakelock</a></strong>.&nbsp;</li><li>We should spend some more time looking at the potential issues of the OS killing a process of an activity that has bound to the TafService (will unbind get called? how can we cleanup? should we implement the&nbsp;saveInstanceState method)</li><li>Update this page with zip files for each example...</li><li>Write a checklist of gotchas and issues to look out for (e.g. especially with regards to service lifecycle such as binding services potentially changing service priorities).</li><li>Write some information about the JNI methods and C++ side of things</li><li>Write some information about the cordova plugin</li></ul><p><br /></p><p><span style="color: rgb(0,0,0);"><br /></span></p>
+</div>
+</div>
+</body>
+</html>

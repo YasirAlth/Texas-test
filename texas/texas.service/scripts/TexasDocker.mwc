@@ -1,0 +1,12 @@
+workspace {
+    cmdline += -include $DAF_ROOT/MPC/config \
+   	-feature_file $TEXAS_FEATURE_FILE
+
+
+   $(L_CONNECTOR_ROOT)/rabbitmq
+   ../texas
+
+   excludes {
+   }
+
+}

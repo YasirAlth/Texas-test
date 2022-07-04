@@ -1,0 +1,114 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+    <texas-connection-status slot="end"></texas-connection-status>
+        <ion-title>
+            Settings
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-list>
+        <ion-item>
+            <ion-label>Settings Password</ion-label>
+            <ion-input type="password" [(ngModel)]="password"></ion-input>
+        </ion-item>
+    </ion-list>
+
+    <ion-list *ngIf="settings !== undefined">
+        <ion-item>
+            <ion-label fixed>Device Name</ion-label>
+            <ion-input type="text" [(ngModel)]="settings.deviceName" (ionBlur)="change()" [disabled]="password!==correctPassword"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label fixed>Device ID</ion-label>
+            <ion-input [disabled]="fixedDeviceId || password!==correctPassword" type="text" [(ngModel)]="settings.deviceId" (ionBlur)="change()"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Category</ion-label>
+            <ion-select [(ngModel)]="settings.categoryId" (ionBlur)="change()" [disabled]="password!==correctPassword">
+                <ion-select-option *ngFor="let category of config.categories" [value]="category.categoryId" [disabled]="password!==correctPassword">{{ category.categoryName }}</ion-select-option>
+            </ion-select>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Agency</ion-label>
+            <ion-select [(ngModel)]="settings.agencyId" (ionBlur)="change()" [disabled]="password!==correctPassword">
+                <ion-select-option *ngFor="let agency of config.agencies" [value]="agency.agencyId" [disabled]="password!==correctPassword">{{ agency.agencyAbbr }}</ion-select-option>
+            </ion-select>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>GPS Enabled</ion-label>
+            <ion-toggle [(ngModel)]="settings.gpsEnabled" (ionChange)="change()" [disabled]="password!==correctPassword"></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Traccar Enabled</ion-label>
+            <ion-toggle [(ngModel)]="settings.traccarEnabled" (ionChange)="change()" [disabled]="password!==correctPassword"></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Compass Enabled</ion-label>
+            <ion-toggle [disabled]="config.isOnDevice()===false" [(ngModel)]="settings.compassEnabled" (ionChange)="change()" [disabled]="password!==correctPassword"></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Alert Sound Enabled</ion-label>
+            <ion-toggle [(ngModel)]="settings.alertSoundOn" (ionChange)="change()" [disabled]="password!==correctPassword"></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Track Prefix Whitelist</ion-label>
+            <ion-input type="text" [(ngModel)]="settings.trackPrefixWhitelist" (ionBlur)="change()" [disabled]="password!==correctPassword"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Track History Expiry Rate</ion-label>
+            <ion-input type="number" min="250" max="120000" [(ngModel)]="settings.trackHistoryExpiry" (ionBlur)="change()" [disabled]="password!==correctPassword"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Update Rate</ion-label>
+            <ion-input type="text" [(ngModel)]="settings.selfTrackUpdateRate" (ionBlur)="change()" [disabled]="password!==correctPassword"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Websocket Address</ion-label>
+            <ion-input type="text" [(ngModel)]="settings.lasagneWebsocketUrl" (ionBlur)="change()" [disabled]="password!==correctPassword"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Developer Mode</ion-label>
+            <ion-select [(ngModel)]="settings.developerMode" (ionBlur)="change()" [disabled]="password!==correctPassword">
+                <ion-select-option *ngFor="let option of developerOptions" [value]="option.value" [disabled]="password!==correctPassword">{{ option.label }}</ion-select-option>
+            </ion-select>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Observer Only</ion-label>
+            <ion-toggle [(ngModel)]="settings.observer" (ionChange)="change()" [disabled]="password!==correctPassword"></ion-toggle>
+        </ion-item>
+
+
+        <div class="ion-padding">
+            <p>
+                <ion-button expand="block" [color]="logging.syncInProgress ? 'dark' : (syncFail ? 'danger' : 'primary')" (click)="syncLogs()" [disabled]="password!==correctPassword">
+                {{logging.syncInProgress ? 'Sync in progress...' : 'Sync logs to server'}}
+                </ion-button>
+            </p>
+        </div>
+
+        <div *ngIf="config.isOnDevice()===false" padding>
+            <p>
+                <ion-button expand="block" color="danger" (click)="reconfigure()" [disabled]="password!==correctPassword">Reconfigure All Assets</ion-button>
+            </p>
+        </div>
+
+    </ion-list>
+</ion-content>

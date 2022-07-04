@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+
+  texas-query:
+    build: ./texas.query
+    image: localhost:32000/texas-query
+
+  texas-logging:
+    build: ./texas.logging
+    image: localhost:32000/texas-logging
+
+  texas-hmi:
+    build: ./texas.hmi
+    image: localhost:32000/texas-hmi
+
+  texas-replay:
+    build: ./texas.replay
+    image: localhost:32000/texas-replay
+
+  texas-replay-hmi:
+    build: ./texas.replay.hmi
+    image: localhost:32000/texas-replay-hmi
+
+  # Builds the texas-lasagne development image
+  # REALLY only want this to be a build only - no running container
+  texas-service:
+    build: ./texas.service
+    image: localhost:32000/texas-service
+
+  # Builds the texas-service-bin runtime image
+  # This is the actual docker container
+  texas-service-bin:
+    build: ./texas.service/texas.docker
+    image:  localhost:32000/texas-service-bin
+
+  texas-tasking:
+    build:
+      context: ./texas.tasking/.
+    image: localhost:32000/texas-tasking
+
+  texas-couch-setup:
+    build:
+      context: ./couch-setup/.
+    image: localhost:32000/texas-couch-setup
+#    entrypoint: "npm run upload"
+
+  texas-replicator:
+    build:
+      context: ./texas.replicator/.
+    image: localhost:32000/texas-replicator

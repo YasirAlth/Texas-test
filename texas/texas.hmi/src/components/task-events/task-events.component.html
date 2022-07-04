@@ -1,0 +1,21 @@
+<ion-list>
+    <ion-list-header>
+        Events
+    </ion-list-header>
+
+  <ng-container *ngIf="task !== null">
+    <ion-item *ngFor="let event of task.events">
+
+        <!-- Struggled with ngSwitch since it needs a parent div? -->
+        <ion-icon *ngIf="event.type===eventType.Image" slot="start" name="image"></ion-icon>
+        <ion-icon *ngIf="event.type===eventType.Video" slot="start" name="videocam"></ion-icon>
+        <ion-icon *ngIf="event.type===eventType.Information" slot="start" name="information-circle"></ion-icon>
+
+        <ion-label class='ion-text-wrap'>
+        <p>{{event.timestamp.toLocaleString()}}</p>
+        <h3>{{event.title}}</h3>
+        <p>{{event.description}}</p>
+      </ion-label>
+    </ion-item>
+  </ng-container>
+</ion-list>

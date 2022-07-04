@@ -1,0 +1,53 @@
+<ion-content *ngIf="selectedAlert !== null; else elseBlock">
+    <ion-item *ngIf="mainOption !== null && secondaryOption!==null" >
+        <ion-label class='ion-text-wrap'>
+            <ion-text color="primary">
+                <h1>{{mainOption.mainOpt}} {{secondaryOption.secOpt}}</h1>
+            </ion-text>
+        </ion-label>
+    </ion-item>
+
+    <ion-item *ngIf="task !== null && task != undefined">
+        <ion-label class='ion-text-wrap'>
+            <ion-text color="primary">
+                <h2>{{task.taskInformation.title}}</h2>
+            </ion-text>
+            <ion-text color="secondary">
+                <p>{{task.taskInformation.description}}</p>
+            </ion-text>
+            <ion-text [color]="task !== null && task !== undefined && task.deviceId.length > 0 ? 'success' : 'danger' ">
+                <p *ngIf="task.deviceId.length > 0; else elseTracksAssignedBlock"><b>Assigned</b></p>
+                <ng-template #elseTracksAssignedBlock>
+                    <p><b>Unassigned</b></p>
+                </ng-template>
+            </ion-text>
+            <ion-text [color]="task.complete === true ? 'success' : 'danger'">
+                <p>{{task.complete === true ? "Completed" : "Incomplete"}}</p>
+            </ion-text>
+        </ion-label>
+    </ion-item>
+
+    <app-task-assignment *roleVisibility="['assignTask']" [task]="task" [owntrack]="owntrack" [selectedAlert]="selectedAlert"></app-task-assignment>
+
+    <app-task-events [task]="task"></app-task-events>
+
+</ion-content>
+
+<ng-template #elseBlock>
+    <ion-content>
+        <ion-item>
+            <ion-label class='ion-text-wrap'>
+                <ion-text color="primary">
+                    <h1>Task not found.</h1>
+                </ion-text>
+            </ion-label>
+        </ion-item>
+    </ion-content>
+</ng-template>
+
+<ion-footer>
+    <ion-toolbar>
+        <ion-button *ngIf="task !== null" expand="block" color="primary" (click)="alertService.displayTaskOptions(task,selectedAlert)">Task Options</ion-button>
+        <ion-button expand="block" (click)="location.back()">Back</ion-button>
+    </ion-toolbar>
+</ion-footer>

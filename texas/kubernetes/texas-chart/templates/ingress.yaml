@@ -1,0 +1,135 @@
+{{ if and .Values.serverConfig.TEXAS_SERVER_SSL (eq .Values.serverConfig.TEXAS_SERVER_SSL "s") }}
+# HTTPS redirect
+# only works for / path atm, no idea why.
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+    name: {{.Release.Name}}-http-catch-all
+    namespace: texas
+spec:
+    entryPoints:
+        - websecure
+    routes:
+        - match: Host(`{{.Values.serverConfig.TEXAS_SERVER}}`)
+          middlewares:
+              - name: {{.Release.Name}}-https-redirect
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+    name: {{.Release.Name}}-https-redirect
+spec:
+    redirectscheme:
+        scheme: https
+---
+{{end}}
+
+# Strip prefixes
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+    name: {{.Release.Name}}-stripped-prefixes
+spec:
+    stripPrefix:
+        prefixes:
+            - /couchdb
+            - /replica-couchdb
+            - /traccar
+            - /grafana
+            - /query
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+    name: {{.Release.Name}}-rabbitmq-amqp
+
+spec:
+    entryPoints:
+        - amqp
+    routes:
+        - match: HostSNI(`*`)
+          services:
+              - name:  {{.Release.Name}}-rabbitmq-ha
+                port: 5672
+
+    {{ if and .Values.serverConfig.TEXAS_SERVER_SSL (eq .Values.serverConfig.TEXAS_SERVER_SSL "s") }}
+    tls:
+      certResolver: default
+    {{end}}
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+    name: {{.Release.Name}}-texas-ingress-router
+    namespace: texas
+spec:
+    entryPoints:
+        - websecure
+    routes:
+        - match: Host(`{{.Values.serverConfig.TEXAS_SERVER}}`) && PathPrefix(`/grafana`)
+          kind: Rule
+          services:
+              - name:  {{.Release.Name}}-grafana
+                port: 80
+          middlewares:
+              - name: {{.Release.Name}}-stripped-prefixes
+        - match: Host(`{{.Values.serverConfig.TEXAS_SERVER}}`) && PathPrefix(`/rabbitmq`)
+          kind: Rule
+          services:
+              - name:  {{.Release.Name}}-rabbitmq-ha
+                port: 15672
+          middlewares:
+              - name: {{.Release.Name}}-stripped-prefixes
+        - match: Host(`{{.Values.serverConfig.TEXAS_SERVER}}`) && PathPrefix(`/texas-service`)
+          kind: Rule
+          services:
+              - name:  {{.Release.Name}}-texas-service-chart
+                port: 9999
+          middlewares:
+              - name: {{.Release.Name}}-stripped-prefixes
+        - match: Host(`{{.Values.serverConfig.TEXAS_SERVER}}`) && PathPrefix(`/replica-couchdb`)
+          kind: Rule
+          services:
+              - name:  {{.Release.Name}}-replica-couchdb
+                port: 5984
+          middlewares:
+              - name: {{.Release.Name}}-stripped-prefixes
+        - match: Host(`{{.Values.serverConfig.TEXAS_SERVER}}`) && PathPrefix(`/couchdb`)
+          kind: Rule
+          services:
+              - name:  {{.Release.Name}}-couchdb
+                port: 5984
+          middlewares:
+              - name: {{.Release.Name}}-stripped-prefixes
+        - match: Host(`{{.Values.serverConfig.TEXAS_SERVER}}`)
+          kind: Rule
+          services:
+              - name: {{.Release.Name}}-texas-hmi-chart
+                port: 80
+        - match: Host(`{{.Values.serverConfig.TEXAS_SERVER}}`) && PathPrefix(`/traccar`)
+          kind: Rule
+          services:
+              - name: {{.Release.Name}}-traccar
+                port: 80
+          middlewares:
+              - name: {{.Release.Name}}-stripped-prefixes
+        - match:  Host(`{{.Values.serverConfig.TEXAS_SERVER}}`) && PathPrefix(`/query`)
+          kind: Rule
+          services:
+            - name: {{.Release.Name}}-texas-query-chart
+              port: 3131
+          middlewares:
+            - name: {{.Release.Name}}-stripped-prefixes
+        - match:  Host(`{{.Values.serverConfig.TEXAS_SERVER}}`) && PathPrefix(`/rocketchat`)
+          kind: Rule
+          services:
+            - name: {{.Release.Name}}-rocketchat
+              port: 80
+    {{ if and .Values.serverConfig.TEXAS_SERVER_SSL (eq .Values.serverConfig.TEXAS_SERVER_SSL "s") }}
+    tls:
+        certResolver: default
+    {{end}}

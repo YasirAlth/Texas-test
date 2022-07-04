@@ -1,0 +1,11 @@
+{
+    "name": "cordova-plugin-texas-lasagne",
+    "version": "2.0.0",
+    "cordova": {
+      "id": "cordova-plugin-texas-lasagne",
+      "platforms": [
+        "android"
+      ]
+    },
+    "description": "A Cordova Plugin for TEXAS/LASAGNE"
+  }

@@ -1,0 +1,36 @@
+providers:
+  consulCatalog:
+    endpoint:
+      address: http://10.100.10.230:8500
+    # only create for services tagged "traefik.enabled=true"
+    exposedByDefault: false
+entryPoints:
+  # service name to container port
+  risevideo-ddc2-cam360-1:       { address: ":500" }
+  risevideo-ddc2-camswann-1:     { address: ":501" }
+  risevideo-video-source-pi4-10: { address: ":502" }
+  risevideo-video-source-pi4-4:  { address: ":503" }
+  risevideo-video-source-pi4-9:  { address: ":504" }
+  video-source-pi4-4:            { address: ":505" }
+  video-source-pi4-6:            { address: ":506" }
+  video-source-pi4-7:            { address: ":507" }
+  video-source-pi4-9:            { address: ":508" }
+
+# API and dashboard configuration
+api:
+  insecure: true
+
+# Consul service configuration
+# {
+#   "ID": "{{service name}}",
+#   "Name": "{{service name}}",
+#   "Service": "{{service name}}",
+#   "Address": "{{IP address}}",
+#   "Port": {{port number}},
+#   "Tags": [
+#     "traefik.enable=true",
+#     "traefik.tcp.routers.{{service name}}.rule=HostSNI(`*`)",
+#     "traefik.tcp.routers.{{service name}}.entrypoints={{service name}}",
+#     "traefik.tcp.routers.{{service name}}.service={{service name}}"
+#   ]
+# }

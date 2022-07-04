@@ -1,0 +1,7 @@
+{
+  "name": "texas.hmi",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular"
+}

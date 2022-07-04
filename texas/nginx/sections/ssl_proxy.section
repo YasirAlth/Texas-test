@@ -1,0 +1,15 @@
+# Usage:
+# nginx.conf
+# server {
+#     listen     15672 ssl;
+#     proxy_pass http://rabbit-mq:15672;
+#     include    sections/ssl_proxy.section
+# }
+
+# https://docs.nginx.com/nginx/admin-guide/security-controls/terminating-ssl-tcp/
+# https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71
+
+# generated certificate paths
+ssl_certificate     /etc/letsencrypt/live/${TEXAS_SERVER}/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/${TEXAS_SERVER}/privkey.pem;
+proxy_ssl_verify ${TEXAS_VERIFY_SSL};

@@ -1,0 +1,62 @@
+{{/*apiVersion: traefik.containo.us/v1alpha1*/}}
+{{/*kind: IngressRoute*/}}
+{{/*metadata:*/}}
+{{/*  name: {{.Release.Name}}-traccar-ingress-router*/}}
+{{/*  namespace: texas*/}}
+{{/*spec:*/}}
+{{/*  entryPoints:*/}}
+{{/*    - websecure*/}}
+{{/*  routes:*/}}
+{{/*    - match: Host(`{{.Values.texasServer}}`) && PathPrefix(`/traccar`)*/}}
+{{/*      kind: Rule*/}}
+{{/*      services:*/}}
+{{/*        - name:  {{ include "traccar.fullname" . }}*/}}
+{{/*          port: 80*/}}
+{{/*      middlewares:*/}}
+{{/*        - name: {{.Release.Name}}-stripped-prefixes*/}}
+{{/*  tls:*/}}
+{{/*    certResolver: default*/}}
+{{/*---*/}}
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{.Release.Name}}-traccar-android-ingress-router
+  namespace: texas
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`{{.Values.texasServer}}`) && PathPrefix(`/traccar-android`)
+      kind: Rule
+      services:
+        - name:  {{ include "traccar.fullname" . }}
+          port: 5055
+      middlewares:
+        - name: {{.Release.Name}}-stripped-prefixes
+{{/*  tls:*/}}
+{{/*    certResolver: default*/}}
+
+---
+
+{{- $root := . -}}
+{{- range untilStep 5001 5003 1 }}
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: {{ $root.Release.Namespace}}-traccar-ingress-router-{{.}}
+  namespace: texas
+spec:
+  entryPoints:
+    - traccar{{ . }}
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name:  {{ include "traccar.fullname" $root }}
+          port: {{.}}
+{{/*  tls:*/}}
+{{/*    certResolver: default*/}}
+
+---
+ {{- end }}
+

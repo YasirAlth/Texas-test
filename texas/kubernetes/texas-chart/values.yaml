@@ -1,0 +1,526 @@
+serverConfig:
+  TEXAS_SERVER_SSL: s
+  TEXAS_SERVER: texas.ct-a.ws
+  TEXAS_SERVER_AND_PORT: texas.ct-a.ws:80
+  TEXAS_COUCH_AUTH: texas:texas
+  traccarStartPort: '"5001"'
+  traccarEndPort: '"5003"'
+
+#traccar
+traccar:
+  texasServer: texas.ct-a.ws
+
+  spec:
+    ports:
+      - protocol: TCP
+        name: websecure
+        port: 8082
+    selector:
+      app: traccar
+
+# Couch DB
+replica-couchdb:
+  clusterSize: 1
+  adminUsername: texas
+  adminPassword: texas
+
+couchdb:
+  clusterSize: 3
+  adminUsername: texas
+  adminPassword: texas
+
+  setup:
+    image: localhost:32000/texas-couch-setup
+
+  couchdbConfig: # enable CORS
+    httpd:
+      enable_cors: true
+    cors:
+      origins: '*'
+      credentials: true
+
+
+# RabbitMQ
+rabbitmq-ha:
+  image:
+    repository: rabbitmq
+    tag: 3.8.0-alpine
+  replicaCount: 1
+
+  rabbitmqPrometheusPlugin:
+    enabled: true
+
+#  ingress:
+#    enabled: true
+#    path: /rabbit
+#    annotations:
+#      kubernetes.io/ingress.class: traefik
+  #    - traefik.ingress.kubernetes.io/rewrite-target: /rabbitmq
+  #      traefik.frontend.rule.type: PathPrefixStrip
+
+  livenessProbe:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - 'wget -O - -q --header "Authorization: Basic `echo -n \"$RABBIT_MANAGEMENT_USER:$RABBIT_MANAGEMENT_PASSWORD\" | base64`" http://localhost:15672/rabbitmq/api/healthchecks/node | grep -qF "{\"status\":\"ok\"}"'
+  failureThreshold: 6
+  periodSeconds: 10
+
+  readinessProbe:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - 'wget -O - -q --header "Authorization: Basic `echo -n \"$RABBIT_MANAGEMENT_USER:$RABBIT_MANAGEMENT_PASSWORD\" | base64`" http://localhost:15672/rabbitmq/api/healthchecks/node | grep -qF "{\"status\":\"ok\"}"'
+    failureThreshold: 6
+    periodSeconds: 10
+
+  extraConfig: |
+    management.path_prefix = /rabbitmq
+
+  definitions:
+    users: |-
+         {
+           "name": "texas",
+           "password": "texas",
+           "tags": "administrator"
+         }
+    permissions: |-
+       {
+         "user": "texas",
+         "vhost": "/",
+         "configure": ".*",
+         "write": ".*",
+         "read": ".*"
+       }
+
+
+# Grafana
+grafana:
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://{{.Release.Name}}-prometheus-server-headless.{{.Release.Namespace}}.svc.cluster.local:9090
+          access: proxy
+          isDefault: true
+
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'texas'
+          orgId: 1
+          folder: 'texas'
+          type: file
+          disableDeletion: true
+          editable: true
+          updateIntervalSeconds: 10
+          options:
+            path: /var/lib/grafana/dashboards/texas
+
+  ## Configure grafana dashboard to import
+  ## NOTE: To use dashboards you must also enable/configure dashboardProviders
+  ## ref: https://grafana.com/dashboards
+  ##
+  ## dashboards per provider, use provider name as key.
+  ##
+  dashboards:
+    texas:
+      rabbit-mq:
+        url: https://raw.githubusercontent.com/rabbitmq/rabbitmq-prometheus/master/docker/grafana/dashboards/RabbitMQ-Overview.json
+      couchdb:
+        gnetId: 10049
+        datasource: Prometheus
+      node-exporter:
+        gnetId: 11074
+        datasource: Prometheus
+      kubernetes:
+        gnetId: 6417
+        datasource: Prometheus
+      texas-devices:
+        json: |
+          {
+            "annotations": {
+              "list": [
+                {
+                  "builtIn": 1,
+                  "datasource": "-- Grafana --",
+                  "enable": true,
+                  "hide": true,
+                  "iconColor": "rgba(0, 211, 255, 1)",
+                  "name": "Annotations & Alerts",
+                  "type": "dashboard"
+                }
+              ]
+            },
+            "editable": true,
+            "gnetId": null,
+            "graphTooltip": 0,
+            "id": 6,
+            "links": [],
+            "panels": [
+              {
+                "aliasColors": {},
+                "bars": false,
+                "cacheTimeout": null,
+                "dashLength": 10,
+                "dashes": false,
+                "datasource": "Prometheus",
+                "fill": 1,
+                "fillGradient": 0,
+                "gridPos": {
+                  "h": 11,
+                  "w": 12,
+                  "x": 0,
+                  "y": 0
+                },
+                "id": 2,
+                "interval": "",
+                "legend": {
+                  "avg": false,
+                  "current": false,
+                  "max": false,
+                  "min": false,
+                  "show": true,
+                  "total": false,
+                  "values": false
+                },
+                "lines": true,
+                "linewidth": 1,
+                "links": [],
+                "nullPointMode": "null",
+                "options": {
+                  "dataLinks": []
+                },
+                "percentage": false,
+                "pluginVersion": "6.4.2",
+                "pointradius": 2,
+                "points": false,
+                "renderer": "flot",
+                "seriesOverrides": [],
+                "spaceLength": 10,
+                "stack": false,
+                "steppedLine": false,
+                "targets": [
+                  {
+                    "expr": "texas_device_position_accuracy_metres",
+                    "instant": false,
+                    "legendFormat": "{{device_name}} ({{device_id}})",
+                    "refId": "A"
+                  }
+                ],
+                "thresholds": [],
+                "timeFrom": null,
+                "timeRegions": [],
+                "timeShift": null,
+                "title": "Position Accuracy",
+                "tooltip": {
+                  "shared": true,
+                  "sort": 0,
+                  "value_type": "individual"
+                },
+                "type": "graph",
+                "xaxis": {
+                  "buckets": null,
+                  "mode": "time",
+                  "name": null,
+                  "show": true,
+                  "values": []
+                },
+                "yaxes": [
+                  {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                  },
+                  {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                  }
+                ],
+                "yaxis": {
+                  "align": false,
+                  "alignLevel": null
+                }
+              },
+              {
+                "datasource": "Prometheus",
+                "gridPos": {
+                  "h": 11,
+                  "w": 12,
+                  "x": 12,
+                  "y": 0
+                },
+                "id": 4,
+                "options": {
+                  "displayMode": "lcd",
+                  "fieldOptions": {
+                    "calcs": [
+                      "lastNotNull"
+                    ],
+                    "defaults": {
+                      "links": [],
+                      "mappings": [],
+                      "max": 100,
+                      "min": 0,
+                      "thresholds": [
+                        {
+                          "color": "red",
+                          "value": null
+                        },
+                        {
+                          "color": "#EAB839",
+                          "value": 30
+                        },
+                        {
+                          "color": "green",
+                          "value": 60
+                        }
+                      ],
+                      "unit": "percent"
+                    },
+                    "override": {},
+                    "values": false
+                  },
+                  "orientation": "horizontal"
+                },
+                "pluginVersion": "6.4.2",
+                "targets": [
+                  {
+                    "expr": "texas_device_battery_percent",
+                    "instant": false,
+                    "legendFormat": "{{device_name}}",
+                    "refId": "A"
+                  }
+                ],
+                "timeFrom": null,
+                "timeShift": null,
+                "title": "Battery Levels",
+                "type": "bargauge"
+              },
+              {
+                "aliasColors": {},
+                "bars": false,
+                "dashLength": 10,
+                "dashes": false,
+                "datasource": "Prometheus",
+                "description": "",
+                "fill": 1,
+                "fillGradient": 0,
+                "gridPos": {
+                  "h": 11,
+                  "w": 24,
+                  "x": 0,
+                  "y": 11
+                },
+                "id": 6,
+                "legend": {
+                  "alignAsTable": true,
+                  "avg": false,
+                  "current": true,
+                  "max": false,
+                  "min": false,
+                  "rightSide": true,
+                  "show": true,
+                  "total": false,
+                  "values": true
+                },
+                "lines": true,
+                "linewidth": 1,
+                "nullPointMode": "null",
+                "options": {
+                  "dataLinks": []
+                },
+                "percentage": false,
+                "pointradius": 2,
+                "points": false,
+                "renderer": "flot",
+                "seriesOverrides": [],
+                "spaceLength": 10,
+                "stack": false,
+                "steppedLine": false,
+                "targets": [
+                  {
+                    "expr": "texas_device_battery_percent",
+                    "legendFormat": "{{device_name}} ({{device_id}})",
+                    "refId": "A"
+                  }
+                ],
+                "thresholds": [],
+                "timeFrom": null,
+                "timeRegions": [],
+                "timeShift": null,
+                "title": "Device Battery Levels",
+                "tooltip": {
+                  "shared": true,
+                  "sort": 0,
+                  "value_type": "individual"
+                },
+                "type": "graph",
+                "xaxis": {
+                  "buckets": null,
+                  "mode": "time",
+                  "name": null,
+                  "show": true,
+                  "values": []
+                },
+                "yaxes": [
+                  {
+                    "decimals": null,
+                    "format": "short",
+                    "label": "",
+                    "logBase": 1,
+                    "max": "100",
+                    "min": "0",
+                    "show": true
+                  },
+                  {
+                    "decimals": null,
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                  }
+                ],
+                "yaxis": {
+                  "align": false,
+                  "alignLevel": null
+                }
+              }
+            ],
+            "refresh": false,
+            "schemaVersion": 20,
+            "style": "dark",
+            "tags": [],
+            "templating": {
+              "list": []
+            },
+            "timepicker": {
+              "refresh_intervals": [
+                "5s",
+                "10s",
+                "30s",
+                "1m",
+                "5m",
+                "15m",
+                "30m",
+                "1h",
+                "2h",
+                "1d"
+              ]
+            },
+            "timezone": "",
+            "title": "texas_device_metrics",
+            "uid": "ra6jQUJZz",
+            "version": 3
+          }
+
+#  ingress:
+#    enabled: true
+#    annotations:
+#      kubernetes.io/ingress.class: traefik
+#      traefik.frontend.rule.type: PathPrefixStrip
+#    hosts:
+#      - null
+#    path: /grafana
+
+  grafana.ini:
+    server:
+      root_url: /grafana
+
+# Prometheus
+prometheus:
+  alertmanager:
+    persistentVolume:
+      enabled: false
+  server:
+    persistentVolume:
+      enabled: false
+    statefulSet:
+      enabled: true
+
+  # adds additional scrape configs to prometheus.yml
+  # must be a string so you have to add a | after extraScrapeConfigs:
+  # example adds prometheus-blackbox-exporter scrape config
+  extraScrapeConfigs: |
+    - job_name: rabbit-mq
+      metrics_path: /metrics
+      static_configs:
+        - targets: [{{.Release.Name}}-rabbitmq-ha.{{.Release.Namespace}}.svc.cluster.local:15692]
+    - job_name: couchdb
+      metrics_path: /
+      static_configs:
+        - targets: [{{.Release.Name}}-prometheus-couchdb-exporter.{{.Release.Namespace}}.svc.cluster.local:9984]
+    - job_name: texas-logging
+      metrics_path: /metrics
+      static_configs:
+        - targets: [{{.Release.Name}}-texas-logging-chart.{{.Release.Namespace}}.svc.cluster.local:80]
+
+
+# Rocket Chat
+## Rocket Chat image version
+## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
+##
+rocketchat:
+  extraEnv: |
+    - name: ROOT_URL
+      value: 'https://localhost/rocketchat'
+    - name: ADMIN_USERNAME
+      value: texas
+    - name: ADMIN_PASS
+      value: texas
+
+  mongodb:
+    persistence:
+      enabled: false
+    mongodbRootPassword: some-super-secure-root-password-that-is-probablynever-used
+    # todo: passwords
+    mongodbUsername: rocketchat
+    mongodbPassword: some-random-mongodb-password-for-rocketchat
+    mongodbDatabase: rocketchat
+
+  #    enabled: false
+  persistence:
+    enabled: false
+
+
+## Traefik
+#traefik:
+#  dashboard:
+#    enabled: true
+#    domain: dashboard.localhost
+#    serviceType: NodePort
+#  rbac:
+#    enabled: true
+#
+#  serviceType: NodePort
+#
+#  service:
+#    nodePorts:
+#      http:  30000
+#      https: 31000
+#
+#  ssl:
+#    enabled: true
+#    enforced: true
+#    generateTLS: true
+#    insecureSkipVerify: false
+
+prometheus-couchdb-exporter:
+  couchdb:
+    username: texas
+    password: texas

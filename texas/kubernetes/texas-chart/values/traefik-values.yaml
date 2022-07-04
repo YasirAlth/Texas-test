@@ -1,0 +1,21 @@
+traefik:
+  dashboard:
+    enabled: true
+    domain: dashboard.localhost
+    serviceType: NodePort
+  rbac:
+    enabled: true
+
+  serviceType: NodePort
+
+  service:
+    nodePorts:
+      http:  30000
+      https: 31000
+
+  ssl:
+    enabled: true
+    enforced: true
+    generateTLS: true
+    insecureSkipVerify: false
+

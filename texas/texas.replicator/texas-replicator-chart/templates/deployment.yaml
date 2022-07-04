@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "texas-replicator-chart.fullname" . }}
+  labels:
+    {{- include "texas-replicator-chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "texas-replicator-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "texas-replicator-chart.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{.Release.Name}}-texas-configmap
+          env:
+            - name: couchdbUsername
+              valueFrom: 
+                secretKeyRef:
+                  name: {{.Release.Name}}-couchdb
+                  key: adminUsername
+            - name: couchdbPassword
+              valueFrom: 
+                secretKeyRef:
+                  name: {{.Release.Name}}-couchdb
+                  key: adminPassword
+            - name: replicaCouchdbUsername
+              valueFrom: 
+                secretKeyRef:
+                  name: {{.Release.Name}}-replica-couchdb
+                  key: adminUsername
+            - name: replicaCouchdbPassword
+              valueFrom: 
+                secretKeyRef:
+                  name: {{.Release.Name}}-replica-couchdb
+                  key: adminPassword
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

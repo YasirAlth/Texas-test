@@ -1,0 +1,6 @@
+.idea/
+.vagrant/
+ubuntu-bionic-18.04-cloudimg-console.log
+couch-setup/node_modules/
+kubernetes/texas-chart/charts/
+/kubernetes/charts/

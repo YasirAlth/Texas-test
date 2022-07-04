@@ -1,0 +1,129 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+    <texas-connection-status slot="end"></texas-connection-status>
+        <ion-title>
+            About Texas
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+    <div *ngIf="isOnDevice">
+        <ion-card>
+            <ion-card-content>
+                <ion-card-title>
+                    Version
+                </ion-card-title>
+                <p>
+                    {{ packageName }} {{ versionNumber }} (4/12/2019)
+                </p>
+            </ion-card-content>
+        </ion-card>
+    </div>
+
+    <br>
+
+    <ion-card>
+        <ion-card-content>
+            <ion-row class="align-items-center">
+                <ion-col>
+                    <img src="assets/logos/texas.png" />
+                </ion-col>
+                <ion-col>
+                    <img src="assets/logos/lasagne.png" />
+                </ion-col>
+            </ion-row>
+            <ion-card-title>
+                TEXAS
+            </ion-card-title>
+            <p>
+                TSI Experimentation Architecture Support (TEXAS) is...
+            </p>
+            <ion-button slot="start" fill="clear" size="small">
+                <ion-icon name="link"></ion-icon>
+                <a href="https://github.com/LASAGNE-Open-Systems">LASAGNE Github</a>
+            </ion-button>
+        </ion-card-content>
+    </ion-card>
+
+    <br>
+
+    <ion-card>
+        <ion-card-content>
+            <ion-row>
+                <ion-col style="background: #dddddd">
+                    <!-- TODO: fix the background on this one -->
+                    <img src="assets/logos/dstg.png" />
+                </ion-col>
+                <ion-col>
+                    <img src="assets/logos/australian-government.png" />
+                </ion-col>
+            </ion-row>
+            <ion-card-title>
+                DST Group
+            </ion-card-title>
+            <p>
+                Defence Science Technology Group
+            </p>
+            <ion-button slot="start" fill="clear" size="small">
+                <ion-icon name="link"></ion-icon>
+                <a href="https://www.dst.defence.gov.au">DST Website</a>
+            </ion-button>
+        </ion-card-content>
+    </ion-card>
+
+    <br>
+
+    <ion-card>
+        <ion-card-content>
+            <ion-row>
+                <ion-col>
+                    <img src="assets/logos/consilium-technology.png" />
+                </ion-col>
+            </ion-row>
+            <ion-card-title>
+                Consilium Technology
+            </ion-card-title>
+            <p>
+                Consilium Technology is a major Modelling and Simulation supplier to the Defence Science and Technology (DST) Group
+            </p>
+            <ion-button slot="start" fill="clear" size="small">
+                <ion-icon name="link"></ion-icon>
+                <a href="https://consilium.technology">Website</a>
+            </ion-button>
+        </ion-card-content>
+    </ion-card>
+
+    <br>
+
+    <ion-card>
+        <ion-card-content>
+            <ion-card-title>
+                Third Party Licences
+            </ion-card-title>
+            <ul>
+                <li>Cordova</li>
+                <li>Ionic</li>
+            </ul>
+        </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="isOnDevice">
+        <ion-card-content>
+            <ion-card-title>
+                Device
+            </ion-card-title>
+            <p>UUID: {{ device.uuid }}</p>
+            <p>Serial: {{ device.serial }}</p>
+            <p>Manufacturer: {{ device.manufacturer }}</p>
+            <p>Model: {{ device.model }} </p>
+            <p>OS Name: {{ device.platform }} </p>
+            <p>OS Version: {{ device.version }}</p>
+            <p>Cordova Version: {{ this.device.cordova }}</p>
+        </ion-card-content>
+    </ion-card>
+
+</ion-content>

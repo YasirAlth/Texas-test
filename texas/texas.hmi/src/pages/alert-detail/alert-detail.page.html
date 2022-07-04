@@ -1,0 +1,74 @@
+<ion-content *ngIf="selectedAlert !== null; else elseBlock">
+    <ion-item>
+        <ion-label class='ion-text-wrap'>
+            <ion-text *ngIf="mainOption !== null && secondaryOption !== null" color="primary">
+                <h1>{{mainOption.mainOpt}} {{secondaryOption.secOpt}}</h1>
+            </ion-text>
+        </ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-label class='ion-text-wrap'>
+        <ion-text *ngIf="selectedAlert.position" color="primary">
+          <h2>Location: {{selectedAlert.position.lat | number : '1.4-4'}}, {{selectedAlert.position.lon  | number : '1.4-4'}}</h2>
+        </ion-text>
+      </ion-label>
+    </ion-item>
+
+    <!-- List of Text Items -->
+    <ion-list>
+        <ion-list-header>
+            Tasks
+        </ion-list-header>
+        <ion-item *ngFor="let task of this.selectedAlert.listOfTasks; let i = index">
+            <ion-label class='ion-text-wrap' [routerLink]="['/sa-container/task-detail/', alertId, task.id, true]">
+                <ion-text color="primary">
+                    <h2>{{task.taskInformation.title}}</h2>
+                </ion-text>
+                <ion-text color="secondary">
+                    <p>{{task.taskInformation.description}}</p>
+                </ion-text>
+                <ion-text [color]="this.selectedAlert !== null &&  this.selectedAlert !== undefined && this.selectedAlert.listOfTasks[i] !== null && this.selectedAlert.listOfTasks[i] !== undefined && this.selectedAlert.listOfTasks[i].deviceId.length > 0 ? 'success' : 'danger' ">
+                    <p *ngIf="this.selectedAlert !== null &&  this.selectedAlert !== undefined && this.selectedAlert.listOfTasks[i] !== null && this.selectedAlert.listOfTasks[i] !== undefined  && this.selectedAlert.listOfTasks[i].deviceId.length > 0; else elseTracksAssignedBlock"><b>Assigned</b></p>
+                    <ng-template #elseTracksAssignedBlock>
+                        <p><b>Unassigned</b></p>
+                    </ng-template>
+                </ion-text>
+                <ion-text [color]="task.complete === true ? 'success' : 'danger'">
+                    <p>{{task.complete === true ? "Completed" : "Incomplete"}}</p>
+                </ion-text>
+            </ion-label>
+            <ion-icon size="large" name="more" slot="end" (click)="alertService.displayTaskOptions(task, selectedAlert)" color="primary"></ion-icon>
+        </ion-item>
+
+        <!--  Add new -->
+        <ion-item>
+            <!--      <ion-label position="floating">Task Name</ion-label>-->
+            <!--      <ion-input></ion-input>-->
+            <!--      <ion-label position="floating">Task Description</ion-label>-->
+            <!--      <ion-textarea></ion-textarea>-->
+            <!--      <br>-->
+            <!--      <ion-button fill="outline" slot="end">Add</ion-button>-->
+         <ion-icon *roleVisibility="['addTask']" size="large" name="add-circle" slot="end" (click)="addTask()"></ion-icon>
+        </ion-item>
+    </ion-list>
+</ion-content>
+
+<ng-template #elseBlock>
+    <ion-content>
+        <ion-item>
+            <ion-label class='ion-text-wrap'>
+                <ion-text color="primary">
+                    <h1>Alert not found.</h1>
+                </ion-text>
+            </ion-label>
+        </ion-item>
+    </ion-content>
+</ng-template>
+
+
+<ion-footer>
+    <ion-toolbar>
+        <ion-button *ngIf="selectedAlert !== null" expand="block" color="primary" (click)="alertService.displayAlertOptions(selectedAlert,false)">Alert Options</ion-button>
+        <ion-button expand="block" (click)="location.back()">Back</ion-button>
+    </ion-toolbar>
+</ion-footer>

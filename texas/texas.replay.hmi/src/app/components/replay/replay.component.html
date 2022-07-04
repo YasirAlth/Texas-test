@@ -1,0 +1,75 @@
+<mat-card>
+  <mat-card-content>
+    <h2 class="example-h2">Replay Control</h2>
+
+    <section class="example-section">
+      <div class="example-button-row">
+        <button mat-raised-button color="primary" (click)="onPlay()">
+          <mat-icon>play_circle_outline</mat-icon> PLAY
+        </button>
+        <button mat-raised-button color="primary" (click)="onPause()">
+          <mat-icon>pause_circle_outline</mat-icon> PAUSE
+        </button>
+      </div>
+    </section>
+    <section class="example-section">
+      <mat-slider class="slider" thumbLabel [displayWith]="createDisplayFn" [disabled]="false" [invert]="false" [max]="getReplayEndTimeMs()"
+        [min]="getReplayStartTimeMs()" [step]="1000" [tickInterval]="60000" [(ngModel)]="sliderValue" [vertical]="false">
+      </mat-slider>
+    </section>
+    <section class="example-section">
+      <mat-form-field class="speed">
+        <input matInput type="number" min="0" max="10" step="0.25" placeholder="Speed" [(ngModel)]="speed">
+      </mat-form-field>
+    </section>
+  </mat-card-content>
+</mat-card>
+
+<mat-card>
+  <mat-card-content>
+    <h2 class="example-h2">Replay Time</h2>
+
+    <section class="example-section">
+        <mat-form-field class="example-margin">
+          <input matInput type="string" placeholder="Session ID" [value]="getReplaySessionId()" disabled>
+        </mat-form-field>
+      </section>    
+    <section class="example-section">
+      <mat-form-field class="example-margin">
+        <input matInput type="string" placeholder="Current time" [value]="getReplayCurrentTime()" disabled>
+      </mat-form-field>
+    </section>
+    <section class="example-section">
+      <mat-form-field class="example-margin">
+        <input matInput type="string" placeholder="Start time" [value]="getReplayStartTime()" disabled>
+      </mat-form-field>
+    </section>
+    <section class="example-section">
+      <mat-form-field class="example-margin">
+        <input matInput type="string" placeholder="End time" [value]="getReplayEndTime()" disabled>
+      </mat-form-field>
+    </section>
+    <section class="example-section">
+      <mat-form-field class="example-margin">
+        <input matInput type="number" placeholder="Offset time" [value]="getReplayTimeOffsetMs()" disabled>
+      </mat-form-field>
+    </section>
+  </mat-card-content>
+</mat-card>
+
+<mat-card>
+  <mat-card-content>
+    <h2 class="example-h2">Actual Time</h2>
+
+    <section class="example-section">
+      <mat-form-field class="example-margin">
+        <input matInput type="string" placeholder="Client time" [value]="getClientTime()" disabled>
+      </mat-form-field>
+    </section>
+    <section class="example-section">
+      <mat-form-field class="example-margin">
+        <input matInput type="string" placeholder="Server time" [value]="getServerTime()" disabled>
+      </mat-form-field>
+    </section>
+  </mat-card-content>
+</mat-card>

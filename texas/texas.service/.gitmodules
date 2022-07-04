@@ -1,0 +1,6 @@
+[submodule "mongoose"]
+    path = mongoose
+	url = https://github.com/cesanta/mongoose.git
+[submodule "json"]
+	path = json
+	url = https://github.com/nlohmann/json.git

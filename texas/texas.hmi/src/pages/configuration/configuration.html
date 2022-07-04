@@ -1,0 +1,97 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+    <texas-connection-status slot="end"></texas-connection-status>
+        <ion-title>
+            Configuration
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="this.configFormGroup" (ngSubmit)="onSubmit()">
+        <mat-vertical-stepper #stepper linear>
+
+            <mat-step [stepControl]="this.configFormGroup.get('agencyCtrl')" label="Step 1: Select Agency">
+                <mat-form-field>
+                    <mat-label>Select Agency</mat-label>
+          <mat-select formControlName = "agencyCtrl" required [(value)]="selectedAgency" (selectionChange)="updateCategories()">
+                        <mat-option *ngFor="let agency of config.agencies" [value]="agency.agencyAbbr">
+                            {{agency.agencyAbbr}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <div>
+          <span style="padding: 0 12px 12px 0">
+            <button mat-raised-button matStepperPrevious type="button" color= "primary">Back</button>
+          </span>
+          <span style="padding: 0 12px 12px 0">
+            <button mat-raised-button matStepperNext type="button" color="accent">Next</button>
+          </span>
+                </div>
+            </mat-step>
+
+            <mat-step [stepControl]="this.configFormGroup.get('categoryCtrl')" label="Step 2: Select Category">
+                <mat-form-field>
+                    <mat-label>Select Category</mat-label>
+                    <mat-select formControlName="categoryCtrl" required>
+              <mat-option *ngFor="let category of catObserver | async" [value]="category.categoryName">
+                            {{category.categoryName}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <div>
+            <span style="padding: 0 12px 12px 0">
+              <button mat-raised-button matStepperPrevious type="button" color= "primary">Back</button>
+            </span>
+            <span style="padding: 0 12px 12px 0">
+              <button mat-raised-button matStepperNext type="button" color="accent">Next</button>
+            </span>
+                </div>
+            </mat-step>
+
+            <mat-step [stepControl]="this.configFormGroup.get('roleCtrl')" label="Step 3: Select Role">
+                <mat-form-field>
+                    <mat-label>Select Role</mat-label>
+                    <mat-select formControlName="roleCtrl" required>
+                        <mat-option *ngFor="let role of roles" [value]="role.viewValue">
+                            {{role.viewValue}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+        <div>
+            <span style="padding: 0 12px 12px 0">
+              <button mat-raised-button matStepperPrevious type="button" color= "primary">Back</button>
+            </span>
+          <span style="padding: 0 12px 12px 0">
+              <button mat-raised-button matStepperNext type="button" color="accent">Next</button>
+            </span>
+        </div>
+      </mat-step>
+
+      <mat-step [stepControl]="this.configFormGroup.get('nameCtrl')" label="Step 4: Name">
+        <mat-form-field>
+          <label>
+            <input formControlName="nameCtrl" matInput placeholder="Name" [value]="currentName">
+          </label>
+        </mat-form-field>
+        <div>
+            <span style="padding: 0 12px 12px 0">
+              <button mat-raised-button matStepperPrevious type="button" color= "primary">Back</button>
+            </span>
+          <span style="padding: 0 12px 12px 0">
+              <button mat-raised-button matStepperNext type="submit" color="warn">Submit</button>
+            </span>
+        </div>
+            </mat-step>
+
+      <mat-step label="Step 5: Configuration Complete" >
+        <p>Browser configuration is complete.</p>
+                <p>Access to app is now enabled.</p>
+      </mat-step>
+
+        </mat-vertical-stepper>
+    </form>
+</ion-content>

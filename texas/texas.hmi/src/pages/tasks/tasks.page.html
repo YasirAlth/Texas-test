@@ -1,0 +1,32 @@
+<ion-content *ngIf="(numTasks$ | async) > 0; else elseBlock">
+    <ion-list>
+        <ion-item *ngFor="let task of tasks$ | async">
+            <ion-label text-wrap [routerLink]="['/sa-container/task-detail/', task.alertId, task.id, false]">
+                <ion-text *ngIf="taskToAlertMap.get(task.id) !== undefined" color="primary">
+                    <h1>{{taskToAlertMap.get(task.id).taskDetail}}</h1>
+                </ion-text>
+                <ion-text color="primary">
+                    <h2>{{task.taskInformation.title}}</h2>
+                </ion-text>
+                <ion-text color="secondary">
+                    <p>{{task.taskInformation.description}}</p>
+                </ion-text>
+                <ion-text [color]="task.complete === true ? 'success' : 'danger'">
+                    <p>{{task.complete === true ? "Completed" : "Incomplete"}}</p>
+                </ion-text>
+            </ion-label>
+            <ion-icon  size="large" name="more" slot="end" (click)="alertService.displayTaskOptions(task, taskToAlertMap.get(task.id).alert)" color="primary"></ion-icon>
+        </ion-item>
+    </ion-list>
+</ion-content>
+<ng-template #elseBlock>
+    <ion-content>
+        <ion-item>
+            <ion-label class='ion-text-wrap'>
+                <ion-text color="primary">
+                    <h1>You have no assigned tasks.</h1>
+                </ion-text>
+            </ion-label>
+        </ion-item>
+    </ion-content>
+</ng-template>

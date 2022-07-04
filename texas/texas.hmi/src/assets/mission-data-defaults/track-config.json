@@ -1,0 +1,49 @@
+{
+  "base": {
+    "_id": "settings",
+    "deviceId": "",
+    "categoryId": 0,
+    "agencyId": 0,
+    "primarySource": 1,
+    "selfTrackUpdateRate": 0,
+    "trackPrefixWhitelist": "",
+    "gpsEnabled": true,
+    "traccarEnabled": true,
+    "traccarTrackerId": "",
+    "compassEnabled": true,
+    "alertSoundOn": true,
+    "trackHistoryExpiry": 30000,
+    "minimumTrackUpdateRate": 2000,
+    "maximumTrackUpdateRate": 10000,
+    "movementThreshold": 5,
+    "powerSaveBatteryThreshold": 25,
+    "developerMode": "",
+    "lasagneWebsocketUrl": "ws${TEXAS_SERVER_SSL}://${TEXAS_SERVER}/texas-service",
+    "rocketChatServer": "http${TEXAS_SERVER_SSL}://${TEXAS_SERVER}/rocketchat",
+    "traccarApiBase": "http${TEXAS_SERVER_SSL}://${TEXAS_SERVER}/traccar/api/",
+    "texasReplayServer": "http${TEXAS_SERVER_SSL}://${TEXAS_SERVER}/replay-server",
+    "couchDatabaseServer": "http${TEXAS_SERVER_SSL}://${TEXAS_COUCH_AUTH}@${TEXAS_SERVER}/couchdb",
+    "texasQueryServer": "http${TEXAS_SERVER_SSL}://${TEXAS_SERVER}/query",
+    "observer": false,
+    "maptrackUp": true,
+    "maplockOwntrack": true,
+    "roles": []
+  },
+  "browser": {
+    "deviceId": "browser1",
+    "compassEnabled": false,
+    "alertSoundOn": false,
+    "trackHistoryExpiry": 60000,
+    "selfTrackUpdateRate": 10000,
+    "observer": true,
+    "maptrackUp": false,
+    "maplockOwntrack": false,
+    "firstRun": true
+  },
+  "device": {
+    "trackPrefixWhitelist": "SLS",
+    "lasagneWebsocketUrl": "ws://localhost:9999",
+    "selfTrackUpdateRate": 5000,
+    "traccarTrackerId": "EXP-PadShark"
+  }
+}

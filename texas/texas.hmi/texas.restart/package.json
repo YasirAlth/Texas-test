@@ -1,0 +1,15 @@
+{
+  "name": "cordova-plugin-restart",
+  "version": "1.0.0",
+  "description": "This plugin exposes command to restart the TEXAS App.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@labs.consilium.technology:7999/texas/texas.restart.git"
+  },
+  "author": "",
+  "license": "ISC"
+}

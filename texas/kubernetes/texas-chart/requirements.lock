@@ -1,0 +1,42 @@
+dependencies:
+- name: rocketchat
+  repository: file://./helm-charts-stable/rocketchat
+  version: 1.1.15
+- name: couchdb
+  repository: file://./helm-charts-stable/couchdb
+  version: 2.2.0
+- name: couchdb
+  repository: file://./helm-charts-stable/couchdb
+  version: 2.2.0
+- name: prometheus
+  repository: file://./helm-charts-stable/prometheus
+  version: 9.2.0
+- name: traccar
+  repository: file://./helm-charts-stable/traccar
+  version: 0.1.0
+- name: prometheus-couchdb-exporter
+  repository: file://./helm-charts-stable/prometheus-couchdb-exporter
+  version: 0.1.1
+- name: grafana
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 3.12.1
+- name: rabbitmq-ha
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 1.34.0
+- name: texas-query-chart
+  repository: file://../../../texas.query/texas-query-chart
+  version: 0.1.0
+- name: texas-logging-chart
+  repository: file://../../../texas.logging/texas-logging-chart
+  version: 0.1.0
+- name: texas-hmi-chart
+  repository: file://../../../texas.hmi/texas-hmi-chart
+  version: 0.1.0
+- name: texas-service-chart
+  repository: file://../../../texas.service/texas-service-chart
+  version: 0.1.0
+- name: texas-replicator-chart
+  repository: file://../../../texas.replicator/texas-replicator-chart
+  version: 0.1.0
+digest: sha256:3da56a2d7a98cf2350822202bbf0ba4047286c13688f5c4b18a4d1607143fc14
+generated: "2020-02-13T22:49:08.446205534Z"

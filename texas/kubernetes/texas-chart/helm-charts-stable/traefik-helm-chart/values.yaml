@@ -1,0 +1,42 @@
+## Default values for Traefik
+image:
+  name: traefik
+  tag: v2.0.4
+#
+deployment:
+  replicas: 1
+#
+
+type: LoadBalancer
+ports:
+  - protocol: TCP
+    name: web
+    port: 8000
+
+  - protocol: TCP
+    name: websecure
+    port: 443
+  - protocol: TCP
+    name: admin
+    port: 8080
+  - protocol: TCP
+    name: amqp
+    port: 5672
+
+logs:
+  loglevel: INFO
+#
+yaml:
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "50Mi"
+    limits:
+      cpu: "300m"
+      memory: "150Mi"
+#  nodeSelector: {}
+#  tolerations: []
+
+serverConfig:
+  traccarStartPort: 5001
+  traccarEndPort: 5003

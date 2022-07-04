@@ -1,0 +1,418 @@
+<ion-content>
+  <ng-container *ngIf="config.isOnDevice()">
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed" *roleVisibility="['sendAlert']">
+      <ion-fab-button color="danger" (click)="toggleAddManualAlert()">
+        <ion-icon name="{{addAlertEnabled ? 'trash' : 'alert'}}"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  </ng-container>
+
+  <ion-fab vertical="bottom" horizontal="start" slot="fixed">
+    <ion-fab-button color="dark">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button color="{{addManualTrackEnabled ? 'secondary' : 'light'}}" (click)="toggleAddManualTrack()">
+        <ion-icon name="person-add"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button color="{{isTriangulationMode() ? 'secondary' : 'light'}}" (click)="triangulationToggle()">
+        <ion-icon name="locate"></ion-icon>
+      </ion-fab-button>
+      <filter></filter>
+      <marker-config></marker-config>
+      <!--Placeholders for track-up toggle and pin to ownship-->
+      <ion-fab-button color="{{this.config.settings.maptrackUp ? 'secondary' : 'light'}}" (click)="config.settings.maptrackUp = !config.settings.maptrackUp">
+        <ion-icon name="navigate"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button color="{{this.config.settings.maplockOwntrack ? 'secondary' : 'light'}}" (click)=" config.settings.maplockOwntrack = !config.settings.maplockOwntrack">
+        <ion-icon name="lock"></ion-icon>
+      </ion-fab-button>
+      <weather></weather>
+    </ion-fab-list>
+
+    <ion-fab-list side="end">
+      <ion-fab-button *ngFor="let source of (sources | removeLocalSourceFilter)"
+              color="{{owntrack.primarySource === source ? 'secondary' : 'light'}}" (click)="selectSource(source)">
+        {{sourceEnum[source].charAt(0)}}
+      </ion-fab-button>
+    </ion-fab-list>
+
+  </ion-fab>
+
+  <aol-map [width]="'100%'" [height]="'100%'" (onClick)="mapClick($event)">
+
+    <!--<aol-interaction-default></aol-interaction-default>-->
+    <!--<aol-control-defaults [rotate]="true"></aol-control-defaults>-->
+
+    <!--Add interactions-->
+    <aol-interaction-pinchzoom></aol-interaction-pinchzoom>
+    <aol-interaction-mousewheelzoom></aol-interaction-mousewheelzoom>
+    <aol-interaction-dragpan *ngIf="this.config.settings.maplockOwntrack === false"></aol-interaction-dragpan>
+    <!--Not sure why this doesn't work? Not sure we want it to work? -->
+    <aol-interaction-dragrotate *ngIf="this.config.settings.maptrackUp === false"></aol-interaction-dragrotate>
+
+    <!--Add controls-->
+    <aol-control-rotate></aol-control-rotate>
+    <aol-control-zoom></aol-control-zoom>
+
+    <aol-view [zoom]="14" [enableRotation]="true" [rotation]="mapHeading">
+      <aol-coordinate [x]="138.4937" [y]="-34.7865" [srid]="'EPSG:4326'"></aol-coordinate>
+    </aol-view>
+    <aol-layer-tile>
+      <aol-source-osm></aol-source-osm>
+    </aol-layer-tile>
+
+    <aol-layer-vector [zIndex]="2">
+      <aol-source-vector>
+        <!--Owntrack marker-->
+        <aol-feature *ngFor="let track of ownTrack$ | async" [id]="track.id">
+          <aol-geometry-point>
+            <aol-coordinate [x]="track.position.lon" [y]="track.position.lat" [srid]="'EPSG:4326'"></aol-coordinate>
+          </aol-geometry-point>
+          <aol-style>
+            <aol-style-icon
+              [src]="track.trackIconSvg"
+              [anchor]="[0.5, 0.5]"
+              [anchorXUnits]="'fraction'" [anchorYUnits]="'fraction'"
+              [scale]="1"
+              [anchorOrigin]="'top-left'"
+              [rotateWithView]="true"
+              [rotation]="track.heading | radians">
+            </aol-style-icon>
+            <aol-style-text [text]="track.detail.trackTitle + track.detail.trackDetails" [offsetX]="15" [offsetY]="0"
+                            [textAlign]="'left'" [font]="'12px sans-serif'">
+              <aol-style-fill [color]="'black'"></aol-style-fill>
+            </aol-style-text>
+          </aol-style>
+        </aol-feature>
+
+        <!--Owntrack pulse marker-->
+<!--        <aol-feature>-->
+<!--          <aol-geometry-point>-->
+<!--            <aol-coordinate [x]="ownshipPulseMarker.position.lon" [y]="ownshipPulseMarker.position.lat"-->
+<!--                            [srid]="'EPSG:4326'"></aol-coordinate>-->
+<!--          </aol-geometry-point>-->
+<!--          <aol-style>-->
+<!--            <aol-style-icon-->
+<!--              [src]="ownshipPulseMarker.svg"-->
+<!--              [anchor]="[0.5, 0.5]"-->
+<!--              [anchorXUnits]="'fraction'" [anchorYUnits]="'fraction'"-->
+<!--              [scale]="1"-->
+<!--              [anchorOrigin]="'top-left'"-->
+<!--              [rotateWithView]="true">-->
+<!--            </aol-style-icon>-->
+<!--          </aol-style>-->
+<!--        </aol-feature>-->
+      </aol-source-vector>
+    </aol-layer-vector>
+
+    <aol-layer-vector [zIndex]="1">
+      <aol-source-vector>
+        <!--Owntrack course line-->
+        <aol-feature *ngFor="let track of ownTrack$ | async | containsCourse">
+          <aol-geometry-point>
+            <aol-coordinate [x]="track.position.lon" [y]="track.position.lat" [srid]="'EPSG:4326'"></aol-coordinate>
+          </aol-geometry-point>
+          <aol-style>
+            <aol-style-icon
+              [src]="track.courseSvg"
+              [anchor]="[0.5, 0.5]"
+              [anchorXUnits]="'fraction'" [anchorYUnits]="'fraction'"
+              [scale]="1"
+              [anchorOrigin]="'top-left'"
+              [rotateWithView]="true"
+              [rotation]="track.course | radians">
+            </aol-style-icon>
+          </aol-style>
+        </aol-feature>
+
+        <aol-feature *ngFor="let marker of tracks$ | async | containsCourse">
+          <aol-geometry-point>
+            <aol-coordinate [x]="marker.position.lon" [y]="marker.position.lat" [srid]="'EPSG:4326'"></aol-coordinate>
+          </aol-geometry-point>
+          <aol-style>
+            <aol-style-icon
+              [src]="marker.courseSvg"
+              [anchor]="[0.5, 0.5]"
+              [anchorXUnits]="'fraction'" [anchorYUnits]="'fraction'"
+              [scale]="1"
+              [anchorOrigin]="'top-left'"
+              [rotateWithView]="true"
+              [rotation]="marker.course | radians">
+            </aol-style-icon>
+          </aol-style>
+        </aol-feature>
+
+        <!--Track markers-->
+        <aol-feature *ngFor="let track of tracks$ | async" [id]="track.id">
+          <aol-geometry-point>
+            <aol-coordinate [x]="track.position.lon" [y]="track.position.lat" [srid]="'EPSG:4326'"></aol-coordinate>
+          </aol-geometry-point>
+          <aol-style>
+            <aol-style-icon
+              [src]="track.trackIconSvg"
+              [anchor]="[0.5, 0.5]"
+              [anchorXUnits]="'fraction'" [anchorYUnits]="'fraction'"
+              [scale]="1"
+              [anchorOrigin]="'top-left'"
+              [rotateWithView]="true"
+              [rotation]="track.heading | radians">
+            </aol-style-icon>
+            <aol-style-text [text]="track.detail.trackTitle + track.detail.trackDetails" [offsetX]="15" [offsetY]="0"
+                            [textAlign]="'left'" [font]="'12px sans-serif'">
+              <aol-style-fill [color]="'black'"></aol-style-fill>
+            </aol-style-text>
+          </aol-style>
+        </aol-feature>
+
+
+
+        <!-- Alert pins -->
+        <aol-feature *ngFor="let pin of alertPins$ | async" [id]="pin.pinId">
+          <aol-geometry-point>
+            <aol-coordinate [x]="pin.position.lon" [y]="pin.position.lat" [srid]="'EPSG:4326'"></aol-coordinate>
+          </aol-geometry-point>
+          <aol-style>
+            <aol-style-icon
+              [src]="pin.svg"
+              [anchor]="[0.5, 0.5]"
+              [anchorXUnits]="'fraction'" [anchorYUnits]="'fraction'"
+              [scale]="1"
+              [anchorOrigin]="'top-right'"
+              [rotateWithView]="false">
+            </aol-style-icon>
+          </aol-style>
+        </aol-feature>
+
+        <aol-feature *ngFor="let pin of alertDestinations$ | async">
+          <aol-geometry-point>
+            <aol-coordinate [x]="pin.position.lon" [y]="pin.position.lat" [srid]="'EPSG:4326'"></aol-coordinate>
+          </aol-geometry-point>
+          <aol-style>
+            <aol-style-icon
+              [src]="pin.svg"
+              [anchor]="[0.5, 0.5]"
+              [anchorXUnits]="'fraction'" [anchorYUnits]="'fraction'"
+              [scale]="2"
+              [anchorOrigin]="'top-left'"
+              [rotateWithView]="false">
+            </aol-style-icon>
+          </aol-style>
+        </aol-feature>
+
+        <aol-overlay *ngFor="let pin of alertBadges$ | async" [offset]="[16,-32]">
+          <aol-coordinate
+            [x]="pin.position.lon"
+            [y]="pin.position.lat"
+            [srid]="'EPSG:4326'"
+          >
+          </aol-coordinate>
+          <aol-content>
+            <ion-badge *ngFor="let item of pin.data" [color]='item.colour' style="margin-right: 2px">{{item.count}}</ion-badge>
+          </aol-content>
+        </aol-overlay>
+
+        <aol-overlay *ngIf="selectedTrack !== null && selectedTrack !== undefined">
+          <aol-coordinate
+            [x]="selectedTrack.position.lon"
+            [y]="selectedTrack.position.lat"
+            [srid]="'EPSG:4326'"
+          >
+          </aol-coordinate>
+          <aol-content>
+            <ion-card>
+              <ion-item>
+                <ion-label>{{selectedTrack.deviceName}}</ion-label>
+              </ion-item>
+              <ion-list>
+                <ion-item>
+                  <p>Battery: {{selectedTrack.battery}}%</p>
+                </ion-item>
+                <ion-item *ngIf="selectedTrack.heading !== null && selectedTrack.heading !==  undefined">
+                  <p>Heading: {{selectedTrack.heading | number : '1.2-2'}}&#176;</p>
+                </ion-item>
+                <ion-item *ngIf="selectedTrack.course !== null && selectedTrack.course !==  undefined">
+                  <p>Course: {{selectedTrack.course | number : '1.2-2'}}&#176;</p>
+                </ion-item>
+                <ion-item *ngIf="selectedTrack.posAccuracy !== null && selectedTrack.posAccuracy !==  undefined">
+                  <p>Position Accuracy: {{selectedTrack.posAccuracy | number : '1.2-2'}}</p>
+                </ion-item>
+              </ion-list>
+              <ion-item *roleVisibility="['controlTrack']">
+                <ion-button expand="block" (click)="contractTrack(selectedTrack.deviceId)">Control</ion-button>
+              </ion-item>
+            </ion-card>
+          </aol-content>
+        </aol-overlay>
+<!--        <aol-feature *ngFor="let line of alertBearings$ | async">-->
+<!--          <aol-geometry-linestring>-->
+<!--            <aol-collection-coordinates-->
+<!--              [coordinates]="[[line[0].lon, line[0].lat],[line[1].lon, line[1].lat]]"-->
+<!--              [srid]="'EPSG:4326'"></aol-collection-coordinates>-->
+<!--          </aol-geometry-linestring>-->
+<!--          <aol-style>-->
+<!--            <aol-style-stroke [color]="'red'" [width]="3" [lineDash]="[.1, 5]"></aol-style-stroke>-->
+<!--          </aol-style>-->
+<!--        </aol-feature>-->
+
+        <!-- Alert details -->
+        <aol-feature *ngFor="let alert of alertDetails$ | async">
+          <aol-geometry-point >
+            <aol-coordinate [x]="alert.position.lon" [y]="alert.position.lat" [srid]="'EPSG:4326'"></aol-coordinate>
+          </aol-geometry-point>
+          <aol-style>
+            <aol-style-text [text]="alert.trackDetails" [offsetX]="25" [offsetY]="10" [textAlign]="'left'"
+                            [font]="'12px sans-serif'">
+              <aol-style-fill [color]="'black'"></aol-style-fill>
+            </aol-style-text>
+          </aol-style>
+        </aol-feature>
+      </aol-source-vector>
+    </aol-layer-vector>
+
+    <aol-layer-vector [zIndex]="0">
+      <aol-source-vector>
+
+        <!--I think divs are ok here?-->
+<!--        <div *ngIf="this.displaySettings.trackHistory">-->
+<!--          &lt;!&ndash; History Circles &ndash;&gt;-->
+<!--          <div *ngFor="let trackRecord of trackManager.tracks">-->
+<!--            &lt;!&ndash; Selectively draw track history, do not show for 'owntrack', or track types 'MAN', 'TRI' or 'DEL' &ndash;&gt;-->
+<!--            <div *ngIf="trackRecord.getLatestTrack().deviceId !== owntrack.deviceId &&-->
+<!--              trackRecord.getLatestTrack().type !== 'MAN' &&-->
+<!--              trackRecord.getLatestTrack().type !== 'TRI' &&-->
+<!--              trackRecord.getLatestTrack().type !== 'DEL' &&-->
+<!--              !trackRecord.filtered">-->
+<!--              <aol-feature *ngFor="let track of trackRecord.history$ | async; let i = index">-->
+<!--                <aol-geometry-point>-->
+<!--                  <aol-coordinate [x]="track.position.lon" [y]="track.position.lat"-->
+<!--                                  [srid]="'EPSG:4326'"></aol-coordinate>-->
+<!--                </aol-geometry-point>-->
+<!--                <aol-style>-->
+<!--                  <aol-style-circle [radius]="3">-->
+<!--                    <aol-style-stroke-->
+<!--                      [color]="track.active ? [0,0,255, 255 ] : 'gray'"-->
+<!--                      [width]="1"></aol-style-stroke>-->
+<!--                    <aol-style-fill-->
+<!--                      [color]="track.active ? [0,0,255, 255 ] : 'gray'"></aol-style-fill>-->
+<!--                  </aol-style-circle>-->
+<!--                </aol-style>-->
+<!--              </aol-feature>-->
+<!--            </div>-->
+<!--          </div>-->
+
+
+        <div *ngIf="this.displaySettings.trackHistory">
+          <aol-feature *ngFor="let track of trackManager.trackHistory$ | async">
+            <aol-geometry-point>
+              <aol-coordinate [x]="track.position.lon" [y]="track.position.lat"
+                              [srid]="'EPSG:4326'"></aol-coordinate>
+            </aol-geometry-point>
+            <aol-style>
+              <aol-style-circle [radius]="3">
+                <aol-style-stroke
+                  [color]="track.active ? [0,0,255, 255 ] : 'gray'"
+                  [width]="1"></aol-style-stroke>
+                <aol-style-fill
+                  [color]="track.active ? [0,0,255, 255 ] : 'gray'"></aol-style-fill>
+              </aol-style-circle>
+            </aol-style>
+          </aol-feature>
+        </div>
+
+
+          <!--Struggling to get this working efficiently for now...-->
+          <!-- History Lines-->
+<!--          <aol-feature *ngFor="let trackRecord of trackManager.tracks">-->
+<!--            <aol-geometry-linestring>-->
+<!--              <aol-collection-coordinates-->
+<!--                [coordinates]="trackRecord.historyPosition$ | async"-->
+<!--                [srid]="'EPSG:4326'"></aol-collection-coordinates>-->
+<!--            </aol-geometry-linestring>-->
+<!--            <aol-style>-->
+<!--              <aol-style-stroke [color]="trackRecord.getLatestTrack().active ? 'blue' : 'gray'"></aol-style-stroke>-->
+<!--            </aol-style>-->
+<!--          </aol-feature>-->
+<!--        </div>-->
+
+        <!-- Points of interest-->
+        <aol-feature *ngFor="let track of pointsOfInterest">
+          <aol-geometry-point>
+            <aol-coordinate [x]="track.lon" [y]="track.lat" [srid]="'EPSG:4326'"></aol-coordinate>
+          </aol-geometry-point>
+          <aol-style>
+            <aol-style-icon
+              [src]="'assets/icon/baseline-place-24px.svg'"
+              [anchor]="[0.5, 1]"
+              [anchorXUnits]="'fraction'" [anchorYUnits]="'fraction'"
+              [scale]="1.5"
+              [anchorOrigin]="'top-left'"
+              [rotateWithView]="false">
+            </aol-style-icon>
+            <aol-style-text [text]="track.tag" [offsetX]="15" [offsetY]="-25" [textAlign]="'left'"
+                            [font]="'12px sans-serif'">
+              <aol-style-fill [color]="'black'"></aol-style-fill>
+            </aol-style-text>
+          </aol-style>
+        </aol-feature>
+
+        <!-- Triangulation Lines -->
+        <aol-feature *ngFor="let line of triangulationLines$ | async">
+          <aol-geometry-linestring>
+            <aol-collection-coordinates
+              [coordinates]="[[line.line[0].lon, line.line[0].lat],[line.line[1].lon, line.line[1].lat]]"
+              [srid]="'EPSG:4326'"></aol-collection-coordinates>
+          </aol-geometry-linestring>
+          <aol-style>
+            <aol-style-stroke [color]="'red'" [width]="3" [lineDash]="[.1, 5]"></aol-style-stroke>
+          </aol-style>
+        </aol-feature>
+
+        <!--Triangulation circle marker-->
+        <aol-feature *ngIf="this.isTriangulationMode() && this.triangulationCentreMarker !== null">
+          <aol-geometry-point>
+            <aol-coordinate [x]="triangulationCentreMarker.position.lon" [y]="triangulationCentreMarker.position.lat"
+                            [srid]="'EPSG:4326'"></aol-coordinate>
+          </aol-geometry-point>
+          <aol-style>
+            <aol-style-circle [radius]="10">
+              <aol-style-stroke [color]="'red'" [width]="1"></aol-style-stroke>
+              <aol-style-fill [color]="'red'"></aol-style-fill>
+            </aol-style-circle>
+          </aol-style>
+        </aol-feature>
+
+        <aol-feature *ngIf="this.isTriangulationMode()">
+          <aol-geometry-linestring>
+            <aol-collection-coordinates
+              [coordinates]="triangulationZone$ | async"
+              [srid]="'EPSG:4326'"></aol-collection-coordinates>
+          </aol-geometry-linestring>
+          <aol-style>
+            <aol-style-stroke [color]="'red'" [width]="3" [lineDash]="[.1, 5]"></aol-style-stroke>
+          </aol-style>
+        </aol-feature>
+
+        <div *ngIf="displaySettings.positionUncertainty">
+          <div *ngFor="let zone of uncertaintyZones">
+            <aol-feature>
+              <aol-geometry-polygon>
+                <aol-collection-coordinates
+                  [coordinates]="zone.zone"
+                  [srid]="'EPSG:4326'">
+                </aol-collection-coordinates>
+              </aol-geometry-polygon>
+              <aol-style>
+                <aol-style-stroke [color]="'blue'"></aol-style-stroke>
+                <aol-style-fill [color]="[0.0,0.0,255.0,0.1]"></aol-style-fill>
+              </aol-style>
+            </aol-feature>
+          </div>
+        </div>
+
+      </aol-source-vector>
+    </aol-layer-vector>
+  </aol-map>
+  <div *ngIf="this.replayService.settings.enabled">test</div>
+</ion-content>
+<div id="alertMenuDiv"></div>
